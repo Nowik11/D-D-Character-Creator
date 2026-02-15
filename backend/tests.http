@@ -1,0 +1,28 @@
+GET localhost:8080/api/features
+
+###
+GET localhost:8080/api/features/1
+###
+
+POST localhost:8080/api/features
+Content-Type: application/json
+
+{
+    "name": "New Feature",
+    "description": "This is a new feature.",
+    "requiredLevel": 1
+}
+
+###
+PUT localhost:8080/api/features/1
+Content-Type: application/json
+
+{
+    "name": "Updated Feature",
+    "description": "This feature has been updated.",
+    "requiredLevel": 2
+}
+
+###
+DELETE localhost:8080/api/features/1
+
