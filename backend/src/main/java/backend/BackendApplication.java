@@ -1,9 +1,16 @@
 package backend;
 
+import backend.database.DBRepository;
+import backend.database.DataLoader;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import javax.xml.crypto.Data;
 
 @SpringBootApplication
 public class BackendApplication {
@@ -12,12 +19,11 @@ public class BackendApplication {
 		SpringApplication.run(BackendApplication.class, args);
 	}
 
+
 	@Bean
-	public CommandLineRunner demo() {
-		return (args) -> {
-			// This is where you can add any initialization code or test data if needed.
-			System.out.println("Backend application started successfully!");
-		};
+	public ObjectMapper objectMapper() {
+		return new ObjectMapper();
 	}
+
 
 }

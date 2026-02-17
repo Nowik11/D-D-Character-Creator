@@ -15,22 +15,16 @@ public class Controller {
     @GetMapping("")
     public List<Feature> getFeatures() {
         return List.of(
-                new Feature("Power Attack", "You can choose to take a -5 penalty to your attack rolls to gain a +10 bonus to your damage rolls.", 1),
-                new Feature("Cleave", "When you make a melee attack and hit, you can make an additional melee attack against a different target within reach.", 2),
-                new Feature("Great Weapon Master", "On your turn, when you score a critical hit with a melee weapon or reduce a creature to 0 hit points with one, you can make one melee weapon attack as a bonus action.", 3)
+                new Feature(1,0,1,"test", "test")
         );
     }
 
     @GetMapping("/{id}")
     public Feature getFeatureById(@PathVariable int id) {
         if(id == 0)
-            return new Feature("Power Attack", "You can choose to take a -5 penalty to your attack rolls to gain a +10 bonus to your damage rolls.", 1);
-        else if(id == 1)
-            return new Feature("Cleave", "When you make a melee attack and hit, you can make an additional melee attack against a different target within reach.", 2);
-        else if(id == 2)
-            return new Feature("Great Weapon Master", "On your turn, when you score a critical hit with a melee weapon or reduce a creature to 0 hit points with one, you can make one melee weapon attack as a bonus action.", 3);
+            return new Feature(0,0,1,"test", "test");
         else
-            return null;
+            return new Feature(id,1,0,"test", "test");
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)

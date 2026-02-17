@@ -1,2 +1,5 @@
 .idea/
 *.iml
+*.db
+*.mv.db
+*.trace.db
