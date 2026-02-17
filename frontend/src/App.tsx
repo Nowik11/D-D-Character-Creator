@@ -1,35 +1,72 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import "./App.css"
+import { useEffect, useState } from 'react'
+import { CharacterCreator } from './CharacterCreator.tsx'
 
-function App() {
-  const [count, setCount] = useState(0)
-
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+interface Feature {
+    name: string;
+    description: string;
+    requiredLevel: number;
+    id: string;
 }
 
-export default App
+function App() {
+    const [features, setFeatures] = useState<Feature[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [page, setPage] = useState('list')
+
+    useEffect(() => {
+        fetch('http://localhost:8080/api/features')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Błąd sieci!');
+                }
+                return response.json();
+            })
+            .then((data: Feature[]) => {
+                const dataWithIDs=data.map(item =>({
+                        ...item,
+                        id: crypto.randomUUID()
+                }));
+                setFeatures(dataWithIDs);
+                setLoading(false);
+            })
+            .catch(error => {
+                console.error('Problem z pobieraniem:', error);
+                setLoading(false);
+            });
+    }, []);
+
+    if (loading) return <p>Ładowanie danych...</p>;
+
+    function FeatureForm(){
+        return(
+            <div style={{ padding: '20px' }}>
+                <h1>Lista danych z Backendu</h1>
+                <ul>
+                    {features.map(f => (
+                        <li key={f.id}>
+                            <p>(ID: {f.id})</p>
+                            <p>{f.name}</p>
+                            <p>{f.description}</p>
+                            <p>{f.requiredLevel}</p>
+                        </li>
+                    ))}
+                </ul>
+                {features.length === 0 && <p>Brak danych do wyświetlenia.</p>}
+            </div>
+        )
+    }
+
+    return (
+        <>
+            <div>
+                {(page==='list' && <FeatureForm />)}
+                {(page==='create' && <CharacterCreator />)}
+            </div>
+        <button onClick={() => page==='list' ? setPage('create') : setPage('list')}>
+            {page==='list' ? 'create character' : 'return to list'}</button>
+        </>
+    );
+}
+
+export default App;

@@ -2,20 +2,7 @@
   max-width: 1280px;
   margin: 0 auto;
   padding: 2rem;
-  text-align: center;
-}
-
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+  text-align: left;
 }
 
 @keyframes logo-spin {
@@ -33,10 +20,72 @@
   }
 }
 
-.card {
-  padding: 2em;
+.select-bar{
+  width: 180px;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  appearance: none;
+  background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="grey" d="M7 10l5 5 5-5z"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 10px top 50%;
+  cursor: pointer;
 }
 
-.read-the-docs {
-  color: #888;
+.custom-multiselect {
+  position: relative; /* Ważne dla pozycjonowania listy */
+  width: 200px;
+}
+
+.select-box {
+  background-color: #1a1a1a;
+  color: #cccccc;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Kontener na listę - musi być pod Select Boxem */
+.options-container {
+  position: absolute;
+  background-color: #1a1a1a; /* Ciemne tło */
+  border: 1px solid #ccc;
+  width: 200px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 999; /* Musi być na wierzchu! */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Styl dla tekstu obok checkboxa */
+.option-label {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  color: #ffffff; /* BIAŁY TEKST - sprawdź czy go nie brakuje */
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.option-label:hover {
+  background-color: #333333;
+}
+
+/* Sam checkbox */
+.option-label input[type="checkbox"] {
+  margin-right: 10px;
+}
+
+.arrow {
+  font-size: 10px;
+  transition: transform 0.3s;
+}
+
+.arrow.open {
+  transform: rotate(180deg);
 }
