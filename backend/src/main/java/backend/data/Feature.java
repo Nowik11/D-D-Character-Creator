@@ -1,4 +1,4 @@
 package backend.data;
 
-public record Feature(String name, String description, int requiredLevel) {
+public record Feature(int id, int typeId, int requiredLevel , String name, String description) {
 }
