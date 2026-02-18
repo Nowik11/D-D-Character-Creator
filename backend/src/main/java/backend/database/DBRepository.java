@@ -64,6 +64,20 @@ public class DBRepository {
        return type;
     }
 
+
+    public List<Feature> getAllFeatures() {
+        return jdbcClient.sql("SELECT * from features")
+                .query(Feature.class)
+                .list();
+    }
+
+    public Optional<Feature> getFeature(int id) {
+        return jdbcClient.sql("SELECT * from features WHERE features.id = ?")
+                .param(id)
+                .query(Feature.class)
+                .optional();
+    }
+
     public void createType(Type type) {
 
         var updatedRows = jdbcClient.sql("INSERT INTO types(id, hit_dice, name, description) values (?,?,?,?)")
@@ -96,10 +110,23 @@ public class DBRepository {
         }
     }
 
+    public void updateFeature(Feature feature, int id) {
+        var updatedRows = jdbcClient.sql("UPDATE features SET type_id  = ?, required_level = ?, name = ?, description = ? WHERE id = ?")
+                .params(List.of(feature.typeId(),feature.requiredLevel(),feature.name(),feature.description(),id ))
+                .update();
+        Assert.state(updatedRows > 0, "Failed to update feature" + feature.name());
+    }
+
     public void deleteType(int id) {
         deleteAllFeatures(id);
 
         jdbcClient.sql("DELETE FROM types WHERE id = ?")
+                .param(id)
+                .update();
+    }
+
+    public void deleteFeature(int id) {
+        jdbcClient.sql("DELETE FROM features WHERE id = ?")
                 .param(id)
                 .update();
     }
