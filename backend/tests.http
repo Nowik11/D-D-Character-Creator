@@ -1,28 +1,70 @@
-GET localhost:8080/api/features
+GET localhost:8080/api/type
 
 ###
-GET localhost:8080/api/features/1
+GET localhost:8080/api/type/1
 ###
 
-POST localhost:8080/api/features
+POST localhost:8080/api/feature
 Content-Type: application/json
 
 {
+    "id" : 7,
+    "typeId": 1,
     "name": "New Feature",
     "description": "This is a new feature.",
     "requiredLevel": 1
 }
 
 ###
-PUT localhost:8080/api/features/1
+PUT localhost:8080/api/feature/0
 Content-Type: application/json
 
 {
-    "name": "Updated Feature",
-    "description": "This feature has been updated.",
-    "requiredLevel": 2
+  "id" : 0,
+  "typeId": 0,
+  "name": "New Feature2",
+  "description": "This is a new feature.",
+  "requiredLevel": 1
 }
 
 ###
-DELETE localhost:8080/api/features/1
+DELETE localhost:8080/api/feature/1
 
+###
+GET http://localhost:8080/api/type
+
+###
+GET http://localhost:8080/api/type/0
+
+###
+POST http://localhost:8080/api/type
+Content-Type: application/json
+
+{
+  "id" : 3,
+  "hitDice": 8,
+  "name": "New Type",
+  "description": "This is a new type.",
+  "features" : [{
+  "id" : 10,
+  "typeId": 3,
+  "name": "New Feature3",
+  "description": "This is a new feature.",
+  "requiredLevel": 1
+  }]
+}
+
+###
+PUT http://localhost:8080/api/type/1
+Content-Type: application/json
+
+{
+  "id" : 0,
+    "hitDice": 8,
+  "name": "New Type2",
+  "description": "This is a new type.",
+  "features" : []
+}
+
+###
+DELETE http://localhost:8080/api/type/1

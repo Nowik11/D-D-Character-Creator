@@ -1,53 +1,85 @@
 package backend.api;
 
 import backend.data.Feature;
+import backend.data.Type;
+import backend.database.DBRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @CrossOrigin(origins = "http://localhost:5173")
-@RequestMapping("/api/features")
+@RequestMapping("/api")
 @RestController
 public class Controller {
 
-    //generally this is a placeholder, we need a db for the controller to make sense.
+    DBRepository repository;
 
-    @GetMapping("")
-    public List<Feature> getFeatures() {
-        return List.of(
-                new Feature(1,0,1,"test", "test")
-        );
+    public Controller(DBRepository repository) {
+        this.repository = repository;
     }
 
-    @GetMapping("/{id}")
+
+    @GetMapping("/type")
+    public List<Type> getTypes() {
+        return repository.getAllTypes();
+    }
+
+    @GetMapping("/feature")
+    public List<Feature> getFeatures() {
+        return repository.getAllFeatures();
+    }
+
+    @GetMapping("/feature/{id}")
     public Feature getFeatureById(@PathVariable int id) {
-        if(id == 0)
-            return new Feature(0,0,1,"test", "test");
-        else
-            return new Feature(id,1,0,"test", "test");
+        Optional<Feature> feature = repository.getFeature(id);
+        return feature.orElse(null);
+    }
+
+    @GetMapping("/type/{id}")
+    public Type getTypeById(@PathVariable int id) {
+        Optional<Type> type = repository.getType(id);
+        return type.orElse(null);
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @PutMapping("/{id}")
+    @PutMapping("/feature/{id}")
     public void updateFeature(@PathVariable int id, @RequestBody Feature feature) {
-        //placeholder, we  need a db to actually update the feature.
-        System.out.println("Updating feature with id " + id + " to " + feature);
+
+        repository.updateFeature(feature, id);
+    }
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PutMapping("/type/{id}")
+
+    public void updateType(@PathVariable int id, @RequestBody Type type) {
+        repository.updateType(type, id);
     }
 
 
     @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping("")
+    @PostMapping("/feature")
     public void createFeature(@RequestBody Feature feature) {
-        //placeholder, we need a db to actually create the feature.
-        System.out.println("Creating feature " + feature);
+        repository.createFeature(feature,feature.typeId());
+    }
+
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping("/type")
+    public void createType(@RequestBody Type type) {
+        repository.createType(type);
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/feature/{id}")
     public void deleteFeature(@PathVariable int id) {
-        //placeholder, we need a db to actually delete the feature.
-        System.out.println("Deleting feature with id " + id);
+        repository.deleteFeature(id);
+    }
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @DeleteMapping("/type/{id}")
+    public void deleteType(@PathVariable int id) {
+        repository.deleteType(id);
     }
 
 }
