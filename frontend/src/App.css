@@ -89,3 +89,41 @@
 .arrow.open {
   transform: rotate(180deg);
 }
+
+.form-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 30px;
+  align-items: start;
+  margin-top: 20px;
+}
+
+/* Grupowanie etykiety i pola, żeby trzymały się razem */
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Styl dla Twoich inputów tekstowych, żeby pasowały do select-boxów */
+input[type="text"], input[type="number"] {
+  background-color: #1a1a1a;
+  color: #cccccc;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  width: 100%;
+  box-sizing: border-box;
+}
+.btn-nav {
+  padding: 10px 20px;
+  background-color: #1a1a1a;
+  color: white;
+  border: 1px solid #ccc;
+  cursor: pointer;
+}
+
+.btn-nav:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
