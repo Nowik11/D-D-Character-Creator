@@ -1,14 +1,14 @@
 package backend.api;
 
 import backend.data.Feature;
-import backend.data.FeatureIdSetter;
-import backend.data.Type;
+import backend.data.IdSetter;
+import backend.data.Subclass;
 import backend.database.DBRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @CrossOrigin(origins = "http://localhost:5173")
 @RequestMapping("/api")
@@ -17,55 +17,29 @@ public class Controller {
 
     DBRepository repository;
 
+    // CONSTRUCTOR
     public Controller(DBRepository repository) {
         this.repository = repository;
     }
 
-
-  /*  @GetMapping("/type")
-    public List<Type> getTypes() {
-        return repository.getAllTypes();
-    }*/
-
-// to be changed
-
+    //FEATURE
     @GetMapping("/feature/{owner_type}/{owner_name}")
     public List<Feature> getAllOwnedFeatures(@PathVariable String owner_type, @PathVariable String owner_name) {
       return  repository.getAllFeatures(owner_type,owner_name);
     }
 
-    /*@GetMapping("/type/{name}")
-    public Type getTypeById(@PathVariable String name) {
-        Optional<Type> type = repository.getType(name);
-        return type.orElse(null);
-    }*/
-
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PutMapping("/feature/{id}")
-    public void updateFeature(@PathVariable int id, @RequestBody InputFeature feature) {
+    public void updateFeature(@PathVariable int id, @RequestBody FeatureDto feature) {
 
         repository.updateFeature(new Feature(id, feature.requiredLevel(),feature.name(),feature.description(),feature.modifiers(),true), id);
     }
 
-  /*  @ResponseStatus(HttpStatus.NO_CONTENT)
-    @PutMapping("/type/{id}")
-
-    public void updateType(@PathVariable int id, @RequestBody Type type) {
-        repository.updateType(type, id);
-    }*/
-
-
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/feature/{owner_type}/{owner_name}")
-    public void createFeature(@RequestBody InputFeature feature, @PathVariable String owner_type, @PathVariable String owner_name) {
-        repository.createFeature(new Feature(FeatureIdSetter.getId(),feature.requiredLevel(),feature.name(),feature.description(),feature.modifiers(),true),owner_type, owner_name);
+    public void createFeature(@RequestBody FeatureDto feature, @PathVariable String owner_type, @PathVariable String owner_name) {
+        repository.createFeature(new Feature(IdSetter.getIdFeature(),feature.requiredLevel(),feature.name(),feature.description(),feature.modifiers(),true),owner_type, owner_name);
     }
-
-   /* @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping("/type")
-    public void createType(@RequestBody Type type) {
-        repository.createType(type);
-    }*/
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/feature/{id}")
@@ -73,10 +47,38 @@ public class Controller {
         repository.deleteFeature(id);
     }
 
-  /*  @ResponseStatus(HttpStatus.NO_CONTENT)
-    @DeleteMapping("/type/{id}")
-    public void deleteType(@PathVariable int id) {
-        repository.deleteType(id);
-    }*/
 
+    //SUBCLASS
+    @GetMapping("/subclass/{type_name}")
+    public List<Subclass> getAllOwnedFeatures(@PathVariable String type_name) {
+        return  repository.getAllSubclasses(type_name);
+    }
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PutMapping("/subclass/{name}")
+    public void updateFeature( @PathVariable String name,@RequestBody SubclassDto subclass) {
+
+        repository.updateSubclass(new Subclass(name,subclass.description(),dtoToFeature(subclass.features()),true),name);
+    }
+
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping("/subclass/{type_name}")
+    public void createSubclass(@PathVariable String type_name, @RequestBody SubclassDto subclass) {
+
+        repository.createSubclass(new Subclass(subclass.name(),subclass.description(),dtoToFeature(subclass.features()),true),type_name);
+    }
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @DeleteMapping("/subclass/{name}")
+    public void deleteSubclass(@PathVariable String name) {
+        repository.deleteSubclass(name);
+    }
+
+    public List<Feature> dtoToFeature(List<FeatureDto> features) {
+        List<Feature> list = new ArrayList<>();
+        for (FeatureDto feature : features) {
+            list.add(new Feature(IdSetter.getIdFeature(),feature.requiredLevel(),feature.name(),feature.description(),feature.modifiers(),true));
+        }
+        return list;
+    }
 }

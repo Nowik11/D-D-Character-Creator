@@ -1,9 +1,6 @@
 package backend.database;
 
-import backend.data.Feature;
-import backend.data.FeatureIdSetter;
-import backend.data.Modifier;
-import backend.data.Type;
+import backend.data.*;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.Assert;
@@ -23,108 +20,84 @@ public class DBRepository {
     }
 
 
-    /*public List<Type> getAllTypes() {
 
-        List<Type> types = jdbcClient.sql("SELECT id, hit_dice, name, description  FROM types ")
-                .query((rs,rowNumber)->
-
-                        new Type(rs.getInt("id"), rs.getInt("hit_dice")
-                                ,rs.getString("name"), rs.getString("description"),new ArrayList<>() ))
+    public List<Subclass> getAllSubclasses(String typeName) {
+        List<Subclass> subclasses = jdbcClient.sql("SELECT name, description,user_created FROM subclasses WHERE type_name = ?")
+                .param(typeName)
+                .query(
+                        (rs, rowNumber)->
+                                new Subclass(
+                                       rs.getString("name"),
+                                       rs.getString("description"),
+                                       new ArrayList<>(),
+                                       rs.getBoolean("user_created")
+                                )
+                )
                 .list();
-        for(Type type : types){
-            List<Feature> features = jdbcClient.sql("SELECT * FROM features WHERE type_id= ?")
-                    .param(type.id())
-                    .query(Feature.class)
-                    .list();
-            type.features().addAll(features);
+
+        for(Subclass subclass : subclasses) {
+            subclass.features().addAll(getAllFeatures("subclass", subclass.name()));
         }
-        return types;
+        return subclasses;
     }
 
 
-    public Optional<Type> getType(int id) {
+    public void createSubclass(Subclass subclass, String typeName) {
+        var updated_rows = jdbcClient.sql("INSERT INTO subclasses(name, description, user_created, type_name) VALUES (?, ?, ?,?)")
+                .params(List.of(subclass.name(), subclass.description(), subclass.userCreated(), typeName))
+                .update();
+        Assert.state(updated_rows > 0, "Subclass was not created");
 
-       Optional<Type> type = jdbcClient.sql("SELECT id, hit_dice, name, description FROM types where id = ?" )
-                .param( id)
-                .query((rs,rowNumber)->
+        for(Feature feature : subclass.features()) {
 
-                        new Type(rs.getInt("id"), rs.getInt("hit_dice")
-                ,rs.getString("name"), rs.getString("description"),new ArrayList<>() ))
+            createFeature(feature,"subclass", subclass.name());
+        }
 
-               .optional();
+    }
 
-       if(type.isPresent()){
-           List <Feature> features = jdbcClient.sql("SELECT * FROM FEATURES WHERE type_id = ? ")
-                   .param(type.get().id())
-                   .query(Feature.class)
-                   .list();
-           type.ifPresent(feature -> feature.features().addAll(features));
-       }
-       return type;
-    }*/
+    public void updateSubclass(Subclass subclass, String name) {
+        var updatedRows = jdbcClient.sql("UPDATE subclasses SET description = ? WHERE name = ?")
+                .params(List.of(subclass.description(), name))
+                .update();
+        Assert.state(updatedRows > 0, "Subclass was not updated");
+
+        deleteAllFeatures("subclass", subclass.name());
+
+        for(Feature feature : subclass.features()) {
+            createFeature(feature,"subclass", subclass.name());
+        }
+    }
+
+    public void deleteSubclass(String name) {
+        var updatedRows = jdbcClient.sql("DELETE FROM subclasses WHERE name = ?")
+                .param(name)
+                .update();
+        Assert.state(updatedRows > 0, "Subclass was not deleted");
+
+        deleteAllFeatures("subclass", name);
+    }
 
 
-    // for example if u want to get features of type just pass "type" as argument of owner and name of current instance
     public List<Feature> getAllFeatures(String typeOfOwner, String nameOfOwner) {
         List<Feature> list =  jdbcClient.sql("SELECT * from features WHERE owner_type = ? AND owner_name = ?")
                 .params(List.of(typeOfOwner, nameOfOwner))
                 .query(
                         (rs,rowNumber)-> new Feature(
-                               rs.getInt("id"),
-                               rs.getInt("required_level"),
-                               rs.getString("name"),
-                               rs.getString("description"),
-                               new ArrayList<>(),
-                               rs.getBoolean("user_created")
-                       )
+                                rs.getInt("id"),
+                                rs.getInt("required_level"),
+                                rs.getString("name"),
+                                rs.getString("description"),
+                                new ArrayList<>(),
+                                rs.getBoolean("user_created")
+                        )
 
                 )
                 .list();
         for(Feature feature : list){
-                feature.modifiers().addAll(getAllModifiers(feature.id()));
+            feature.modifiers().addAll(getAllModifiers(feature.id()));
         }
         return list;
     }
-
-    // i don't think that's needed but i will leave it here for now
-//    public Optional<Feature> getFeature(int id, String typeOfOwner) {
-//        return jdbcClient.sql("SELECT * from features_"+typeOfOwner+ " WHERE owner_name = ?")
-//                .params(id)
-//                .query(Feature.class)
-//                .optional();
-//    }
-
-   /* public void createType(Type type) {
-
-        var updatedRows = jdbcClient.sql("INSERT INTO types(id, hit_dice, name, description) values (?,?,?,?)")
-                .params(List.of(type.id(), type.hitDice(), type.name(), type.description()))
-                .update();
-
-        Assert.state(updatedRows > 0, "Failed to create type" + type.name());
-        for(Feature feature : type.features()){
-
-            createFeature(feature, type.id());
-        }
-
-    }
-
-    public void createAllTypes(List<Type> types){
-        types.forEach(this::createType);
-    }
-
-    public void updateType(Type type, int id) {
-        var updatedRows = jdbcClient.sql("UPDATE types SET  hit_dice = ?, name = ?, description = ? WHERE id = ?")
-                .params(List.of( type.hitDice(), type.name(), type.description(), id))
-                .update();
-        Assert.state(updatedRows > 0, "Failed to update type" + type.name());
-
-        deleteAllFeatures(id);
-
-        for(Feature feature : type.features()){
-
-            createFeature(feature, type.id());
-        }
-    }*/
 
     public void updateFeature(Feature feature, int id) {
         var updatedRows = jdbcClient.sql("UPDATE features SET name  = ?, description = ?, required_level = ?, user_created= ? WHERE id = ?")
@@ -139,13 +112,6 @@ public class DBRepository {
         }
     }
 
-    /*public void deleteType(String name) {
-        deleteAllFeatures(name);
-
-        jdbcClient.sql("DELETE FROM types WHERE name = ?")
-                .param(name)
-                .update();
-    }*/
 
  public void deleteFeature(int id) {
 
@@ -195,6 +161,11 @@ public class DBRepository {
         jdbcClient.sql("DELETE FROM modifiers WHERE feature_id = ?")
                 .param(featureId)
                 .update();
+        Assert.state(updatedRowsFeat > 0, "Failed to create feature : " + feature.name());
+
+        for (Modifier modifier : feature.modifiers()) {
+            createModifier(modifier,feature.id());
+        }
     }
 
     public void createModifier(Modifier modifier, int featureId) {
