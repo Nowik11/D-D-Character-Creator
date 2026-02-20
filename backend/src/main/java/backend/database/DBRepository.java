@@ -1,12 +1,15 @@
 package backend.database;
 
 import backend.data.Feature;
+import backend.data.FeatureIdSetter;
+import backend.data.Modifier;
 import backend.data.Type;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.Assert;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,12 +22,8 @@ public class DBRepository {
         this.jdbcClient = jdbcClient;
     }
 
-    public int count(){
 
-        return jdbcClient.sql("SELECT * FROM  types").query().listOfRows().size();
-    }
-
-    public List<Type> getAllTypes() {
+    /*public List<Type> getAllTypes() {
 
         List<Type> types = jdbcClient.sql("SELECT id, hit_dice, name, description  FROM types ")
                 .query((rs,rowNumber)->
@@ -62,23 +61,40 @@ public class DBRepository {
            type.ifPresent(feature -> feature.features().addAll(features));
        }
        return type;
-    }
+    }*/
 
 
-    public List<Feature> getAllFeatures() {
-        return jdbcClient.sql("SELECT * from features")
-                .query(Feature.class)
+    // for example if u want to get features of type just pass "type" as argument of owner and name of current instance
+    public List<Feature> getAllFeatures(String typeOfOwner, String nameOfOwner) {
+        List<Feature> list =  jdbcClient.sql("SELECT * from features WHERE owner_type = ? AND owner_name = ?")
+                .params(List.of(typeOfOwner, nameOfOwner))
+                .query(
+                        (rs,rowNumber)-> new Feature(
+                               rs.getInt("id"),
+                               rs.getInt("required_level"),
+                               rs.getString("name"),
+                               rs.getString("description"),
+                               new ArrayList<>(),
+                               rs.getBoolean("user_created")
+                       )
+
+                )
                 .list();
+        for(Feature feature : list){
+                feature.modifiers().addAll(getAllModifiers(feature.id()));
+        }
+        return list;
     }
 
-    public Optional<Feature> getFeature(int id) {
-        return jdbcClient.sql("SELECT * from features WHERE features.id = ?")
-                .param(id)
-                .query(Feature.class)
-                .optional();
-    }
+    // i don't think that's needed but i will leave it here for now
+//    public Optional<Feature> getFeature(int id, String typeOfOwner) {
+//        return jdbcClient.sql("SELECT * from features_"+typeOfOwner+ " WHERE owner_name = ?")
+//                .params(id)
+//                .query(Feature.class)
+//                .optional();
+//    }
 
-    public void createType(Type type) {
+   /* public void createType(Type type) {
 
         var updatedRows = jdbcClient.sql("INSERT INTO types(id, hit_dice, name, description) values (?,?,?,?)")
                 .params(List.of(type.id(), type.hitDice(), type.name(), type.description()))
@@ -108,42 +124,86 @@ public class DBRepository {
 
             createFeature(feature, type.id());
         }
-    }
+    }*/
 
     public void updateFeature(Feature feature, int id) {
-        var updatedRows = jdbcClient.sql("UPDATE features SET type_id  = ?, required_level = ?, name = ?, description = ? WHERE id = ?")
-                .params(List.of(feature.typeId(),feature.requiredLevel(),feature.name(),feature.description(),id ))
+        var updatedRows = jdbcClient.sql("UPDATE features SET name  = ?, description = ?, required_level = ?, user_created= ? WHERE id = ?")
+                .params(List.of(feature.name(), feature.description(), feature.id(), feature.userCreated(), id ))
                 .update();
         Assert.state(updatedRows > 0, "Failed to update feature" + feature.name());
+
+        deleteAllModifiers(feature.id());
+
+        for(Modifier modifier : feature.modifiers()){
+            createModifier(modifier, id);
+        }
     }
 
-    public void deleteType(int id) {
-        deleteAllFeatures(id);
+    /*public void deleteType(String name) {
+        deleteAllFeatures(name);
 
-        jdbcClient.sql("DELETE FROM types WHERE id = ?")
-                .param(id)
+        jdbcClient.sql("DELETE FROM types WHERE name = ?")
+                .param(name)
+                .update();
+    }*/
+
+ public void deleteFeature(int id) {
+
+     deleteAllModifiers(id);
+
+     jdbcClient.sql("DELETE FROM features WHERE id = ?")
+               .param(id)
+               .update();
+}
+
+    public void deleteAllFeatures(String typeOfOwner, String nameOfOwner) {
+
+        List<Integer> ids = jdbcClient.sql("SELECT id FROM features WHERE owner_name = ? AND owner_type = ?")
+                .params(List.of(typeOfOwner,nameOfOwner))
+                .query(Integer.class)
+                .list();
+
+        for(Integer id : ids){
+            deleteAllModifiers(id);
+        }
+
+        jdbcClient.sql("DELETE FROM features WHERE owner_name = ? AND owner_type = ?")
+                .params(List.of(nameOfOwner, typeOfOwner))
                 .update();
     }
 
-    public void deleteFeature(int id) {
-        jdbcClient.sql("DELETE FROM features WHERE id = ?")
-                .param(id)
+    public void createFeature(Feature feature, String typeOfOwner, String nameOfOwner) {
+        var updatedRowsFeat = jdbcClient.sql("INSERT INTO features(id,owner_type, owner_name, name, description, required_level, user_created) values (?,?,?,?,?,?,?) ")
+                .params(List.of(feature.id(),typeOfOwner,nameOfOwner, feature.name(), feature.description(), feature.requiredLevel(), feature.userCreated()))
+                .update();
+        Assert.state(updatedRowsFeat > 0, "Failed to create feature : " + feature.name());
+
+        for (Modifier modifier : feature.modifiers()) {
+            createModifier(modifier,feature.id());
+        }
+    }
+
+    public List<Modifier> getAllModifiers( int featureId) {
+        return jdbcClient.sql("SELECT modifier_type, modifier_value FROM modifiers WHERE feature_id = ?")
+                .param(featureId)
+                .query(Modifier.class)
+                .list();
+    }
+
+    public void deleteAllModifiers (int featureId) {
+
+        jdbcClient.sql("DELETE FROM modifiers WHERE feature_id = ?")
+                .param(featureId)
                 .update();
     }
 
-    public void deleteAllFeatures(int typeId) {
-        jdbcClient.sql("DELETE FROM features WHERE type_id = ?")
-                .param(typeId)
+    public void createModifier(Modifier modifier, int featureId) {
+        jdbcClient.sql("INSERT INTO modifiers(feature_id,modifier_type, modifier_value) VALUES (?,?,?)")
+                .params(List.of(featureId, modifier.modifierType().name(), modifier.modifierValue()))
                 .update();
     }
 
-    public void createFeature(Feature feature, int typeId) {
-        var updatedRowsFeat = jdbcClient.sql("INSERT INTO features(id, type_id, required_level, name, description ) values (?,?,?,?,?) ")
-                .params(List.of(feature.id(), typeId, feature.requiredLevel(), feature.name(), feature.description()))
-                .update();
-        Assert.state(updatedRowsFeat > 0, "Failed to create feature" + feature.name());
 
-    }
 
 
 

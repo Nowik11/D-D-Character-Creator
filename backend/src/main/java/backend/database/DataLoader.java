@@ -28,7 +28,7 @@ public class DataLoader implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        System.out.println("Loading data to database...");
+       /* System.out.println("Loading data to database...");
         try( InputStream inputStream = getClass().getResourceAsStream("/data.json");){
 
             List<Type> types = mapper.readValue(inputStream, new TypeReference<>() {
@@ -38,14 +38,14 @@ public class DataLoader implements CommandLineRunner {
         }
         catch(Exception e){
             throw new RuntimeException(e);
-        }
+        }*/
 
-        //testing the db
-            System.out.println(dbRepository.getAllTypes());
-            System.out.println(dbRepository.getType(0));
-            dbRepository.updateType(new Type(0,7,"ziemniak","dobra pyrka nie jest zła", new ArrayList<Feature>(Collections.singleton((new Feature(1, 0, 0, "pieczenie pyrki", "upieczona pyrka lepsza niż zwykł"))))),0);
-            System.out.println(dbRepository.getAllTypes());
-            //dbRepository.deleteType(0);
+//        //testing the db
+//            System.out.println(dbRepository.getAllTypes());
+//            System.out.println(dbRepository.getType(0));
+//            dbRepository.updateType(new Type(0,7,"ziemniak","dobra pyrka nie jest zła", new ArrayList<Feature>(Collections.singleton((new Feature(1, 0, 0, "pieczenie pyrki", "upieczona pyrka lepsza niż zwykł"))))),0);
+//            System.out.println(dbRepository.getAllTypes());
+//            //dbRepository.deleteType(0);
     }
 
 

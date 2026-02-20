@@ -1,6 +1,7 @@
 package backend.api;
 
 import backend.data.Feature;
+import backend.data.FeatureIdSetter;
 import backend.data.Type;
 import backend.database.DBRepository;
 import org.springframework.http.HttpStatus;
@@ -21,54 +22,50 @@ public class Controller {
     }
 
 
-    @GetMapping("/type")
+  /*  @GetMapping("/type")
     public List<Type> getTypes() {
         return repository.getAllTypes();
+    }*/
+
+// to be changed
+
+    @GetMapping("/feature/{owner_type}/{owner_name}")
+    public List<Feature> getAllOwnedFeatures(@PathVariable String owner_type, @PathVariable String owner_name) {
+      return  repository.getAllFeatures(owner_type,owner_name);
     }
 
-    @GetMapping("/feature")
-    public List<Feature> getFeatures() {
-        return repository.getAllFeatures();
-    }
-
-    @GetMapping("/feature/{id}")
-    public Feature getFeatureById(@PathVariable int id) {
-        Optional<Feature> feature = repository.getFeature(id);
-        return feature.orElse(null);
-    }
-
-    @GetMapping("/type/{id}")
-    public Type getTypeById(@PathVariable int id) {
-        Optional<Type> type = repository.getType(id);
+    /*@GetMapping("/type/{name}")
+    public Type getTypeById(@PathVariable String name) {
+        Optional<Type> type = repository.getType(name);
         return type.orElse(null);
-    }
+    }*/
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PutMapping("/feature/{id}")
-    public void updateFeature(@PathVariable int id, @RequestBody Feature feature) {
+    public void updateFeature(@PathVariable int id, @RequestBody InputFeature feature) {
 
-        repository.updateFeature(feature, id);
+        repository.updateFeature(new Feature(id, feature.requiredLevel(),feature.name(),feature.description(),feature.modifiers(),true), id);
     }
 
-    @ResponseStatus(HttpStatus.NO_CONTENT)
+  /*  @ResponseStatus(HttpStatus.NO_CONTENT)
     @PutMapping("/type/{id}")
 
     public void updateType(@PathVariable int id, @RequestBody Type type) {
         repository.updateType(type, id);
-    }
+    }*/
 
 
     @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping("/feature")
-    public void createFeature(@RequestBody Feature feature) {
-        repository.createFeature(feature,feature.typeId());
+    @PostMapping("/feature/{owner_type}/{owner_name}")
+    public void createFeature(@RequestBody InputFeature feature, @PathVariable String owner_type, @PathVariable String owner_name) {
+        repository.createFeature(new Feature(FeatureIdSetter.getId(),feature.requiredLevel(),feature.name(),feature.description(),feature.modifiers(),true),owner_type, owner_name);
     }
 
-    @ResponseStatus(HttpStatus.CREATED)
+   /* @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/type")
     public void createType(@RequestBody Type type) {
         repository.createType(type);
-    }
+    }*/
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/feature/{id}")
@@ -76,10 +73,10 @@ public class Controller {
         repository.deleteFeature(id);
     }
 
-    @ResponseStatus(HttpStatus.NO_CONTENT)
+  /*  @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/type/{id}")
     public void deleteType(@PathVariable int id) {
         repository.deleteType(id);
-    }
+    }*/
 
 }
