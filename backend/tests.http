@@ -1,70 +1,52 @@
-GET localhost:8080/api/type
-
-###
-GET localhost:8080/api/type/1
-###
-
-POST localhost:8080/api/feature
+POST localhost:8080/api/feature/type/wizard
 Content-Type: application/json
 
 {
-    "id" : 7,
-    "typeId": 1,
-    "name": "New Feature",
-    "description": "This is a new feature.",
-    "requiredLevel": 1
+  "requiredLevel": 1,
+  "name": "Sculpt Spells",
+  "description": "Skill issue fireball casting feat",
+  "modifiers": [
+    {
+      "modifierType": "AC_BONUS",
+      "modifierValue": "INT"
+    }
+  ]
 }
 
+###
+POST localhost:8080/api/feature/type/wizard
+Content-Type: application/json
+
+{
+  "requiredLevel": 3,
+  "name": "Magic Missile Spam",
+  "description": "Just throws a lot of glowing darts.",
+  "modifiers": [
+    {
+      "modifierType": "DAMAGE_BONUS",
+      "modifierValue": "1d4+1"
+    }
+  ]
+}
+
+###
+GET localhost:8080/api/feature/type/wizard
 ###
 PUT localhost:8080/api/feature/0
 Content-Type: application/json
 
 {
-  "id" : 0,
-  "typeId": 0,
-  "name": "New Feature2",
-  "description": "This is a new feature.",
-  "requiredLevel": 1
+  "requiredLevel": 2,
+  "name": "Action Surge",
+  "description": "Push yourself beyond your normal limits for a moment. On your turn, you can take one additional action on top of your regular action and a possible bonus action.",
+  "modifiers": [
+    {
+      "modifierType": "AC_BONUS",
+      "modifierValue": "1"
+    }
+  ]
 }
-
 ###
+
 DELETE localhost:8080/api/feature/1
 
-###
-GET http://localhost:8080/api/type
-
-###
-GET http://localhost:8080/api/type/0
-
-###
-POST http://localhost:8080/api/type
-Content-Type: application/json
-
-{
-  "id" : 3,
-  "hitDice": 8,
-  "name": "New Type",
-  "description": "This is a new type.",
-  "features" : [{
-  "id" : 10,
-  "typeId": 3,
-  "name": "New Feature3",
-  "description": "This is a new feature.",
-  "requiredLevel": 1
-  }]
-}
-
-###
-PUT http://localhost:8080/api/type/1
-Content-Type: application/json
-
-{
-  "id" : 0,
-    "hitDice": 8,
-  "name": "New Type2",
-  "description": "This is a new type.",
-  "features" : []
-}
-
-###
-DELETE http://localhost:8080/api/type/1

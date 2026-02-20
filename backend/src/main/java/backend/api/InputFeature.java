@@ -1,13 +1,14 @@
-package backend.data;
+package backend.api;
+
+import backend.data.Modifier;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.PositiveOrZero;
 
 import java.util.List;
 
-public record Feature(int id,@Positive int requiredLevel , @NotEmpty String name, @NotEmpty String description, List<Modifier> modifiers, boolean userCreated) {
+public record InputFeature( @Positive int requiredLevel , @NotEmpty String name, @NotEmpty String description, List<Modifier> modifiers) {
 
-    public Feature {
+    public InputFeature {
         if (requiredLevel  >20) {
             throw new IllegalArgumentException("Required level should be maximum of 20");
 
