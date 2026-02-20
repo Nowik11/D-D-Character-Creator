@@ -50,3 +50,82 @@ Content-Type: application/json
 
 DELETE localhost:8080/api/feature/1
 
+###
+GET localhost:8080/api/subclass/wizard
+
+###
+POST localhost:8080/api/subclass/wizard
+Content-Type: application/json
+
+{
+  "name": "School of Evocation",
+  "description": "Generic wizard subclass",
+  "features": [
+    {
+      "requiredLevel": 1,
+      "name": "Sculpt Spells",
+      "description": "Skill issue fireball casting feat",
+      "modifiers": [
+        {
+          "modifierType": "AC_BONUS",
+          "modifierValue": "INT"
+        }
+      ]
+    },
+
+    {
+      "requiredLevel": 3,
+      "name": "Magic Missile Spam",
+      "description": "Just throws a lot of glowing darts.",
+      "modifiers": [
+        {
+          "modifierType": "DAMAGE_BONUS",
+          "modifierValue": "1d4+1"
+        }
+      ]
+    }
+
+  ]
+}
+
+###
+PUT localhost:8080/api/subclass/School of Evocation
+Content-Type: application/json
+
+  {
+    "name": "Path of the Berserker",
+    "description": "A path of untrammeled fury, fraught with blood and thrills.",
+    "features": [
+      {
+        "requiredLevel": 3,
+        "name": "Frenzy",
+        "description": "You can go into a frenzy when you rage, allowing you to make a single melee weapon attack as a bonus action.",
+        "modifiers": [
+          {
+            "modifierType": "DAMAGE_BONUS",
+            "modifierValue": "1"
+          }
+        ]
+      },
+      {
+        "requiredLevel": 6,
+        "name": "Mindless Rage",
+        "description": "You can't be charmed or frightened while raging.",
+        "modifiers": [
+          {
+            "modifierType": "DAMAGE_BONUS",
+            "modifierValue": "CHARMED"
+          },
+          {
+            "modifierType": "DAMAGE_BONUS",
+            "modifierValue": "FRIGHTENED"
+          }
+        ]
+      }
+    ]
+  }
+
+###
+DELETE localhost:8080/api/subclass/School of Evocation
+
+

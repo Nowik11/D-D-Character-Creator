@@ -7,6 +7,15 @@ CREATE TABLE IF NOT EXISTS types(
 );
 
 
+CREATE TABLE IF NOT EXISTS subclasses(
+    name VARCHAR(128) NOT NULL PRIMARY KEY,
+    type_name VARCHAR(128) NOT NULL,
+    description VARCHAR(1024) NOT NULL,
+    user_created boolean
+);
+
+
+
 -- one to be used in all
 CREATE TABLE IF NOT EXISTS features(
     id INT PRIMARY KEY ,
