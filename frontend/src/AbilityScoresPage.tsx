@@ -88,7 +88,7 @@ export function MethodSelector({data, updateData}: Props){
     }
     return(
         <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
-            <div className="input-group" style={{position: 'relative'}}>
+            <div className="input-group" style={{position: 'relative'}} ref={dropdownRef}>
                 <p>Select the way, thy ability scores shall be calculated</p>
                 <div className="select-box" tabIndex={0} onClick={() => (setIsAbilityOpen(!isAbilityOpen))}>
                     {
