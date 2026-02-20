@@ -19,7 +19,7 @@ interface displayProps extends Props{
 }
 
 const statsOrder = ["str", "dex", "con", "int", "wis", "cha"] as const
-const [isAbilityOpen, setIsAbilityOpen]=useState(false);
+
 
 const calculatePointsLeft = (scores: Record<string, number>, points: number) => {
     const costMap: Record<number, number> = {
@@ -55,6 +55,19 @@ const handleRoll = ({data, updateData}:Props) => {
 }
 
 export function MethodSelector({data, updateData}: Props){
+    const [isAbilityOpen, setIsAbilityOpen]=useState(false);
+    const dropdownRef = React.useRef<HTMLDivElement>(null);
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsAbilityOpen(false);
+            }
+        }
+        document.addEventListener('click', handleClickOutside);
+        return () => {
+            document.removeEventListener('click', handleClickOutside);
+        };
+    }, []);
     const handleAbilitySelect = (val: string)=>{
         const startVal = val === "Point Buy" ? 7 : -1;
         const newScores = {
@@ -143,7 +156,8 @@ export function StdArrayStatModule({name, ability, modifierValue, data, updateDa
                     {modifierValue}
                 </div>
             </div>
-        </div>);
+        </div>
+    );
 }
 
 export function StatModule({name, ability, modifierValue, data, updateData, points}: statProps){
@@ -255,18 +269,6 @@ export function DisplayArray({data, updateData, points}:displayProps){
 
 export function AbilityScoresPage({data, updateData}: Props){
     const pointsLeft = calculatePointsLeft(data.abilityScores.scores, 27);
-    useEffect(() => {
-        const handleGlobalClick = (event: MouseEvent)=>{
-            const target = event.target as HTMLElement;
-            if (!target.closest('.select-box') && !target.closest('.options-container')) {
-                setIsAbilityOpen(false);
-            }
-        }
-        document.addEventListener('click', handleGlobalClick);
-        return () => {
-            document.removeEventListener('click', handleGlobalClick);
-        };
-    }, []);
     return(
         <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
             <MethodSelector data={data} updateData={updateData}/>

@@ -1,37 +1,22 @@
 import './App.css'
-import {type SetStateAction, useEffect, useState} from "react";
+import {type SetStateAction, useEffect, useRef, useState} from "react";
 import type {Character} from "./Character.ts";
 interface Props{
     data: Character;
     updateData: React.Dispatch<SetStateAction<Character>>
 }
-const [isMulticlassOpen, setIsMulticlassOpen] = useState(false)
-const [isClassesOpen, setIsClassesOpen] = useState(false)
-const [isRaceOpen, setIsRaceOpen] = useState(false)
-const [isClassOpen, setIsClassOpen]=useState(false)
-const closeSelectBoxes=() =>{
-    setIsMulticlassOpen(false);
-    setIsRaceOpen(false);
-    setIsClassesOpen(false);
-    setIsClassOpen(false);
-}
+
 export function NameInput({ data, updateData }: Props){
     return(
-        <>
-            <p>First, let's learn some basics about thy character:</p>
-            <div className="form-container">
-                {/*NAME*/}
-                <div className="input-group">
-                    <p>What shall your character be named??</p>
-                    <input
-                        className={'input-bar'}
-                        value={data.name}
-                        placeholder={'Enter name'}
-                        onChange={(e) =>
-                            updateData({...data, name: e.target.value})}/>
-                </div>
-            </div>
-        </>
+        <div className="input-group" >
+            <p>What shall your character be named??</p>
+            <input
+                className={'input-bar'}
+                value={data.name}
+                placeholder={'Enter name'}
+                onChange={(e) =>
+                    updateData({...data, name: e.target.value})}/>
+        </div>
     );
 }
 
@@ -57,16 +42,25 @@ export function StartingLvlInput({ data, updateData }: Props){
 }
 
 export function RaceSelector({ data, updateData }:Props){
+    const [isRaceOpen, setIsRaceOpen] = useState(false)
+    const dropdownRef = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsRaceOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
     const handleRaceSelect=(race: string)=>{
         updateData({...data, race: race})
         setIsRaceOpen(false);
     }
     return(
-        <div className="input-group" style={{position: 'relative'}}>
+        <div className="input-group" style={{position: 'relative'}} ref={dropdownRef}>
             <p>Select thy race:</p>
-            <div className="select-box" tabIndex={0} onClick={(e)=> {
-                e.stopPropagation();
-                closeSelectBoxes();
+            <div className="select-box" tabIndex={0} onClick={()=> {
                 setIsRaceOpen(!isRaceOpen);
             }}>
                 {
@@ -94,12 +88,21 @@ export function RaceSelector({ data, updateData }:Props){
 }
 
 export function MainClassSelector({data, updateData}: Props){
+    const [isClassOpen, setIsClassOpen]=useState(false)
+    const dropdownRef = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsClassOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
     return(
-        <div className="input-group" style={{position: 'relative'}}>
+        <div className="input-group" style={{position: 'relative'}} ref={dropdownRef}>
             <p>Choose thy class</p>
-            <div className="select-box" tabIndex={0} onClick={(e) =>{
-                e.stopPropagation();
-                closeSelectBoxes();
+            <div className="select-box" tabIndex={0} onClick={() =>{
                 setIsClassOpen(!isClassOpen)}}>
                 {
                     data.class===''? "Select your main class" : data.class
@@ -129,6 +132,17 @@ export function MainClassSelector({data, updateData}: Props){
 }
 
 export function MulticlassQuestionSelector({data, updateData}:Props){
+    const [isMulticlassOpen, setIsMulticlassOpen] = useState(false)
+    const dropdownRef = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsMulticlassOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
     const handleMultiClassSelect = (val: string) =>{
         const isMulti = val === "Yes";
         updateData({
@@ -139,11 +153,9 @@ export function MulticlassQuestionSelector({data, updateData}:Props){
         setIsMulticlassOpen(false);
     }
     return(
-        <div className="input-group" style={{position: 'relative'}}>
+        <div className="input-group" style={{position: 'relative'}} ref={dropdownRef}>
             <p>Will thy character be multiclass??</p>
-            <div className="select-box" tabIndex={0} onClick={(e) => {
-                e.stopPropagation();
-                closeSelectBoxes();
+            <div className="select-box" tabIndex={0} onClick={() => {
                 setIsMulticlassOpen(!isMulticlassOpen)
             }}>
                 {
@@ -169,6 +181,17 @@ export function MulticlassQuestionSelector({data, updateData}:Props){
 }
 
 export function MulticlassSelector({data, updateData}: Props){
+    const [isClassesOpen, setIsClassesOpen] = useState(false)
+    const dropdownRef = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsClassesOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
     const toggleClass=(className: string) =>{
         const isSelected = data.classes.includes(className);
         const updatedClasses = isSelected
@@ -177,15 +200,13 @@ export function MulticlassSelector({data, updateData}: Props){
         updateData({ ...data, classes: updatedClasses });
     };
     return(
-        <div className="input-group" style={{position: 'relative'}}>
+        <div className="input-group" style={{position: 'relative'}} ref={dropdownRef}>
             {
                 (data.classes.length===1 ?
                     <p style={{color:"red"}}>Only one class selected!</p>:
                     <p>Choose thy classes</p>)
             }
-            <div className="select-box" tabIndex={0} onClick={(e) =>{
-                e.stopPropagation();
-                closeSelectBoxes();
+            <div className="select-box" tabIndex={0} onClick={() =>{
                 setIsClassesOpen(!isClassesOpen)}}>
                 {
                     (data.classes.length>0 ?
@@ -213,29 +234,20 @@ export function MulticlassSelector({data, updateData}: Props){
 }
 
 export function CharacterCreator({ data, updateData }: Props){
-    useEffect(() => {
-        const handleGlobalClick = (event: MouseEvent)=>{
-            const target = event.target as HTMLElement;
-            if (!target.closest('.select-box') && !target.closest('.options-container')) {
-                closeSelectBoxes();
-            }
-        }
-        document.addEventListener('click', handleGlobalClick);
-        return () => {
-            document.removeEventListener('click', handleGlobalClick);
-        };
-    }, []);
     return(
         <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
             <h1>Welcome to DND character creator!!</h1>
-            <NameInput data={data} updateData={updateData}/>
-            <StartingLvlInput data={data} updateData={updateData}/>
-            <RaceSelector data={data} updateData={updateData}/>
-            <MainClassSelector data={data} updateData={updateData}/>
-            <MulticlassQuestionSelector data={data} updateData={updateData}/>
-            {data.isMulticlass &&
-                <MulticlassSelector data={data} updateData={updateData}/>
-            }
+            <p>First, let's learn some basics about thy character:</p>
+            <div className={"form-container"}>
+                <NameInput data={data} updateData={updateData}/>
+                <StartingLvlInput data={data} updateData={updateData}/>
+                <RaceSelector data={data} updateData={updateData}/>
+                <MainClassSelector data={data} updateData={updateData}/>
+                <MulticlassQuestionSelector data={data} updateData={updateData}/>
+                {data.isMulticlass &&
+                    <MulticlassSelector data={data} updateData={updateData}/>
+                }
+            </div>
         </div>
     )
 }
