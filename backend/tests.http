@@ -87,7 +87,6 @@ Content-Type: application/json
 
   ]
 }
-
 ###
 PUT localhost:8080/api/subclass/School of Evocation
 Content-Type: application/json

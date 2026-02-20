@@ -161,6 +161,11 @@ public class DBRepository {
         jdbcClient.sql("DELETE FROM modifiers WHERE feature_id = ?")
                 .param(featureId)
                 .update();
+        Assert.state(updatedRowsFeat > 0, "Failed to create feature : " + feature.name());
+
+        for (Modifier modifier : feature.modifiers()) {
+            createModifier(modifier,feature.id());
+        }
     }
 
     public void createModifier(Modifier modifier, int featureId) {
