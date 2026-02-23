@@ -5,10 +5,9 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.Assert;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.*;
 
 @Repository
 public class DBRepository {
@@ -175,8 +174,87 @@ public class DBRepository {
     }
 
 
+    // helper function
+    private Race mapRowToRace(ResultSet rs, int rowNum) throws SQLException {
+        String abilityIncTypeString = rs.getString("ability_increase_type");
+        AbilityScores abilityScoreType = (abilityIncTypeString != null) ? AbilityScores.valueOf(abilityIncTypeString) : null;
+        int abilityScoreValue = rs.getInt("ability_increase_value");
+        AbstractMap.SimpleEntry<AbilityScores, Integer> abilityScoreInc = (abilityScoreType != null) ? new AbstractMap.SimpleEntry<>(abilityScoreType, abilityScoreValue) : null;
 
+        return new Race(
+                rs.getString("name"),
+                rs.getString("description"),
+                rs.getString("age"),
+                rs.getString("alignment"),
+                Size.valueOf(rs.getString("size")),
+                rs.getInt("speed"),
+                abilityScoreInc,
+                new ArrayList<>(),
+                new ArrayList<>()
+        );
+    }
 
+    public List<Race> getAllRaces() {
+        List<Race> races = jdbcClient.sql("SELECT * FROM races").query(this::mapRowToRace).list();
+
+        for (Race race : races) {
+            race.features().addAll(getAllFeatures("race", race.name()));
+        }
+
+        return races;
+    }
+
+    public List<String> getAllRacesNames() {
+        return jdbcClient.sql("SELECT name FROM races").query(String.class).list();
+    }
+
+    public Race getRaceByName(String name) {
+        Race race = jdbcClient.sql("SELECT * FROM races WHERE name = ?")
+                .param(name)
+                .query(this::mapRowToRace)
+                .single();
+
+        race.features().addAll(getAllFeatures("race", race.name()));
+
+        return race;
+    }
+
+    public void createRace(Race race) {
+        String abilityScoreType = (race.abilityScoreInc() != null) ? race.abilityScoreInc().getKey().name() : null;
+        Integer abilityScoreValue = (race.abilityScoreInc() != null) ? race.abilityScoreInc().getValue() : null;
+
+        var updatedRows = jdbcClient.sql("INSERT INTO races(name, description, age, alignment, size, speed, ability_increase_type, ability_increase_value, languages) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")
+                .params(Arrays.asList(race.name(), race.desc(), race.age(), race.alignment(), race.size(), race.speed(), abilityScoreType, abilityScoreValue, race.languages()))
+                .update();
+        Assert.state(updatedRows > 0, "Failed to create race: " + race.name());
+
+        for (Feature feature : race.features()) {
+            createFeature(feature, "race", race.name());
+        }
+    }
+
+    public void updateRace(Race race, String name) {
+        String abilityScoreType = (race.abilityScoreInc() != null) ? race.abilityScoreInc().getKey().name() : null;
+        Integer abilityScoreValue = (race.abilityScoreInc() != null) ? race.abilityScoreInc().getValue() : null;
+
+        var updatedRows = jdbcClient.sql("UPDATE races SET description = ?, age = ?, alignment = ?, size = ?, speed = ?, ability_increase_type = ?, ability_increase_value = ?, languages = ? WHERE name = ?")
+                .param(Arrays.asList(race.desc(), race.age(), race.alignment(), race.size(), race.speed(), abilityScoreType, abilityScoreValue, race.languages(), race.name()))
+                .update();
+        Assert.state(updatedRows > 0, "Failed to update race: " + name);
+
+        deleteAllFeatures("race", name);
+
+        for (Feature feature : race.features()) {
+            createFeature(feature, "race", name);
+        }
+    }
+
+    public void deleteRace(String name) {
+        deleteAllFeatures("race", name);
+
+        var updatedRows = jdbcClient.sql("DELETE FROM races WHERE name = ?").param(name).update();
+        Assert.state(updatedRows > 0, "Failed to delete race: " + name);
+    }
 
 
 }

@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/DnD_Character_Builder.iml" filepath="$PROJECT_DIR$/DnD_Character_Builder.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/backend.main.iml" filepath="$PROJECT_DIR$/.idea/modules/backend.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/com.example.backend.main.iml" filepath="$PROJECT_DIR$/.idea/modules/com.example.backend.main.iml" />
     </modules>
   </component>
 </project>

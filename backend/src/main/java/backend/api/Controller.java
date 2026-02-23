@@ -2,9 +2,11 @@ package backend.api;
 
 import backend.data.Feature;
 import backend.data.IdSetter;
+import backend.data.Race;
 import backend.data.Subclass;
 import backend.database.DBRepository;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -80,5 +82,38 @@ public class Controller {
             list.add(new Feature(IdSetter.getIdFeature(),feature.requiredLevel(),feature.name(),feature.description(),feature.modifiers(),true));
         }
         return list;
+    }
+
+
+    // RACE
+    @GetMapping("/race")
+    public List<Race> getAllRaces() {
+        return repository.getAllRaces();
+    }
+
+    @GetMapping("/race/names")
+    public List<String> getAllRacesNames() {
+        return repository.getAllRacesNames();
+    }
+
+    @GetMapping("/race/{name}")
+    public Race getRaceByName(@PathVariable String name) {
+        return repository.getRaceByName(name);
+    }
+
+    @PostMapping("/race")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void createRace(@RequestBody Race race) {
+        repository.createRace(race);
+    }
+
+    @PutMapping("/race/{name}")
+    public void updateRace(@RequestBody Race race, @PathVariable String name) {
+        repository.updateRace(race, name);
+    }
+
+    @DeleteMapping("/race/{name}")
+    public void deleteRace(@PathVariable String name) {
+        repository.deleteRace(name);
     }
 }
