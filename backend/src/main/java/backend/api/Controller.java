@@ -2,8 +2,10 @@ package backend.api;
 
 import backend.data.Feature;
 import backend.data.IdSetter;
+import backend.data.Spell;
 import backend.data.Subclass;
 import backend.database.DBRepository;
+import jakarta.validation.constraints.Positive;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -81,4 +83,43 @@ public class Controller {
         }
         return list;
     }
+
+    //SPELL
+
+    @GetMapping("/spell/get_all/{type_name}")
+    public List<Spell> getAllSpells(@PathVariable String type_name) {
+        return repository.getAllSpells(type_name);
+    }
+
+    @PostMapping("/spell/{type_name}/{spell_name}")
+    public void addToSpellList(@PathVariable String type_name, @PathVariable String spell_name) {
+        repository.addToSpellList(type_name,spell_name);
+    }
+
+    @PostMapping("/spell")
+    public void addSpell(@RequestBody SpellDto spell) {
+        repository.createSpell(new Spell(spell.name(), spell.description(),spell.schoolOfMagic(), spell.level(),
+                spell.range(), spell.duration(), spell.isConcentration(), spell.isAttack(), true,
+                spell.damage(),spell.spellComponent(),spell.castingTime()));
+    }
+
+    @PutMapping("/spell")
+    public void updateSpell(@RequestBody SpellDto spell) {
+
+        repository.updateSpell(new Spell(spell.name(), spell.description(),spell.schoolOfMagic(), spell.level(),
+                spell.range(), spell.duration(), spell.isConcentration(), spell.isAttack(), true,
+                spell.damage(),spell.spellComponent(),spell.castingTime()));
+
+    }
+
+    @DeleteMapping("/spell/{spell_name}")
+    public void deleteSpell(@PathVariable String spell_name) {
+        repository.deleteSpell(spell_name);
+    }
+
+    @DeleteMapping("/spell/{type_name}/{spell_name}")
+    public void deleteFromSpellList(@PathVariable String type_name, @PathVariable String spell_name) {
+        repository.deleteFromSpellList(type_name,spell_name);
+    }
+
 }
