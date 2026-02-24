@@ -1,9 +1,6 @@
 package backend.api;
 
-import backend.data.Feature;
-import backend.data.IdSetter;
-import backend.data.Race;
-import backend.data.Subclass;
+import backend.data.*;
 import backend.database.DBRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -115,5 +112,38 @@ public class Controller {
     @DeleteMapping("/race/{name}")
     public void deleteRace(@PathVariable String name) {
         repository.deleteRace(name);
+    }
+
+
+    // BACKGROUND
+    @GetMapping("/background")
+    public List<Background> getAllBackgrounds() {
+        return repository.getAllBackgrounds();
+    }
+
+    @GetMapping("/background/names")
+    public List<String> getAllBackgroundsNames() {
+        return repository.getAllBackgroundsNames();
+    }
+
+    @GetMapping("/background/{name}")
+    public Background getBackgroundByName(@PathVariable String name) {
+        return repository.getBackgroundByName(name);
+    }
+
+    @PostMapping("/background")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void createBackground(@RequestBody Background background) {
+        repository.createBackground(background);
+    }
+
+    @PutMapping("/background/{name}")
+    public void updateBackground(@RequestBody Background background, @PathVariable String name) {
+        repository.updateBackground(background, name);
+    }
+
+    @DeleteMapping("/background/{name}")
+    public void deleteBackground(@PathVariable String name) {
+        repository.deleteBackground(name);
     }
 }

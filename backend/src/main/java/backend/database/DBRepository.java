@@ -256,5 +256,79 @@ public class DBRepository {
         Assert.state(updatedRows > 0, "Failed to delete race: " + name);
     }
 
+    public List<Background> getAllBackgrounds() {
+        List<Background> backgrounds = jdbcClient.sql("SELECT * FROM backgrounds").query(
+                (rs, rowNum) -> new Background(
+                        rs.getString("name"),
+                        rs.getString("description"),
+                        new ArrayList<>(),
+                        new ArrayList<>(),
+                        new ArrayList<>(),
+                        new ArrayList<>(),
+                        new ArrayList<>()
+        )
+        ).list();
 
+        for (Background background : backgrounds) {
+            background.features().addAll(getAllFeatures("background", background.name()));
+        }
+
+        return backgrounds;
+    }
+
+    public List<String> getAllBackgroundsNames() {
+        return jdbcClient.sql("SELECT name FROM backgrounds").query(String.class).list();
+    }
+
+    public Background getBackgroundByName(String name) {
+        Background background = jdbcClient.sql("SELECT * FROM backgrounds WHERE name = ?")
+                .param(name)
+                .query(
+                        (rs, rowNum) -> new Background(
+                                rs.getString("name"),
+                                rs.getString("description"),
+                                new ArrayList<>(),
+                                new ArrayList<>(),
+                                new ArrayList<>(),
+                                new ArrayList<>(),
+                                new ArrayList<>()
+                        )
+                )
+                .single();
+
+        background.features().addAll(getAllFeatures("background", background.name()));
+
+        return background;
+    }
+
+    public void createBackground(Background background) {
+        var updatedRows = jdbcClient.sql("INSERT INTO background(name, description, skill_proficiencies, tool_proficiencies, languages, equipment) VALUES (?, ?, ?, ?, ?, ?)")
+                .params(Arrays.asList(background.name(), background.desc(), background.skillProf(), background.toolProf(), background.languages(), background.equipment()))
+                .update();
+        Assert.state(updatedRows > 0, "Failed to create background: " + background.name());
+
+        for (Feature feature : background.features()) {
+            createFeature(feature, "background", background.name());
+        }
+    }
+
+    public void updateBackground(Background background, String name) {
+        var updatedRows = jdbcClient.sql("UPDATE backgrounds SET description = ?, skill_proficiencies = ?, tool_proficiencies = ?, languages = ?, equipment = ? WHERE name = ?")
+                .param(Arrays.asList(background.desc(), background.skillProf(), background.toolProf(), background.languages(), background.equipment(), background.name()))
+                .update();
+        Assert.state(updatedRows > 0, "Failed to update background: " + name);
+
+        deleteAllFeatures("background", name);
+
+        for (Feature feature : background.features()) {
+            createFeature(feature, "background", name);
+        }
+    }
+
+    public void deleteBackground(String name) {
+        deleteAllFeatures("background", name);
+
+        var updatedRows = jdbcClient.sql("DELETE FROM backgrounds WHERE name = ?").param(name).update();
+        Assert.state(updatedRows > 0, "Failed to delete background: " + name);
+    }
 }

@@ -45,3 +45,12 @@ CREATE TABLE IF NOT EXISTS races(
     ability_increase_value INT,
     languages VARCHAR(128) NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS backgrounds(
+    name VARCHAR(128) NOT NULL PRIMARY KEY,
+    description VARCHAR(1024) NOT NULL,
+    skill_proficiencies VARCHAR(128),
+    tool_proficiencies VARCHAR(128),
+    languages VARCHAR(128) NOT NULL,
+    equipment VARCHAR(1024) NOT NULL,
+);
