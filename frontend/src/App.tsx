@@ -27,16 +27,19 @@ function App() {
         name:'',
         startLvl: -1,
         race: '',
+        class: '',
         isMulticlass: false,
         classes:[],
         abilityScores: ({
             method: '',
-            int: 0,
-            str: 0,
-            dex: 0,
-            con: 0,
-            wis: 0,
-            cha: 0
+            scores: {
+                str: -1,
+                dex: -1,
+                con: -1,
+                int: -1,
+                wis: -1,
+                cha: -1
+            }
         })
         });
     const isCreateStepValid = () => {
