@@ -1,4 +1,4 @@
-package backend.data;
+package backend.data.enums;
 
 public enum AbilityScores {
     STR,
