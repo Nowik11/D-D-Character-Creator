@@ -12,7 +12,7 @@ import java.util.List;
 
 public record Spell(@NotEmpty String name, @NotEmpty String description,
                     @NotEmpty String schoolOfMagic, @PositiveOrZero int level,
-                    @PositiveOrZero int range, @PositiveOrZero int duration,
+                    @NotEmpty String range, @NotEmpty String duration,
                     boolean isConcentration, boolean isAttack, boolean userCreated,
                     List<Damage> damage, SpellComponent spellComponent,
                     CastingTime castingTime)   {
