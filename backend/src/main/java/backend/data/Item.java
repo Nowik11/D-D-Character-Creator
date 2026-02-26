@@ -1,7 +1,10 @@
 package backend.data;
 
-public record Item(String name,
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.PositiveOrZero;
+
+public record Item(@NotEmpty String name,
                    String desc,
-                   int cost,
-                   int weight) {
+                   @PositiveOrZero int cost,
+                   @PositiveOrZero int weight) {
 }

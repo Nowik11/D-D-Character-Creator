@@ -5,6 +5,7 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.Assert;
 
+import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
@@ -157,14 +158,14 @@ public class DBRepository {
 
     public void deleteAllModifiers (int featureId) {
 
-        jdbcClient.sql("DELETE FROM modifiers WHERE feature_id = ?")
-                .param(featureId)
-                .update();
-        Assert.state(updatedRowsFeat > 0, "Failed to create feature : " + feature.name());
-
-        for (Modifier modifier : feature.modifiers()) {
-            createModifier(modifier,feature.id());
-        }
+//        jdbcClient.sql("DELETE FROM modifiers WHERE feature_id = ?")
+//                .param(featureId)
+//                .update();
+//        Assert.state(updatedRowsFeat > 0, "Failed to create feature : " + feature.name());
+//
+//        for (Modifier modifier : feature.modifiers()) {
+//            createModifier(modifier,feature.id());
+//        }
     }
 
     public void createModifier(Modifier modifier, int featureId) {
@@ -173,6 +174,8 @@ public class DBRepository {
                 .update();
     }
 
+
+    // RACE
 
     // helper function
     private Race mapRowToRace(ResultSet rs, int rowNum) throws SQLException {
@@ -256,6 +259,8 @@ public class DBRepository {
         Assert.state(updatedRows > 0, "Failed to delete race: " + name);
     }
 
+
+    // BACKGROUND
     public List<Background> getAllBackgrounds() {
         List<Background> backgrounds = jdbcClient.sql("SELECT * FROM backgrounds").query(
                 (rs, rowNum) -> new Background(
@@ -330,5 +335,56 @@ public class DBRepository {
 
         var updatedRows = jdbcClient.sql("DELETE FROM backgrounds WHERE name = ?").param(name).update();
         Assert.state(updatedRows > 0, "Failed to delete background: " + name);
+    }
+
+
+    // ITEM
+    public List<Item> getAllItems() {
+        return jdbcClient.sql("SELECT * FROM items").query(
+                (rs, rowNum) -> new Item(
+                        rs.getString("name"),
+                        rs.getString("description"),
+                        rs.getInt("cost"),
+                        rs.getInt("weight")
+                )
+        ).list();
+    }
+
+    public List<String> getAllItemsNames() {
+        return jdbcClient.sql("SELECT name FROM items").query(String.class).list();
+    }
+
+    public Item getItemByName(String name) {
+        return jdbcClient.sql("SELECT * FROM items WHERE name = ?")
+                .param(name)
+                .query(
+                        (rs, rowNum) -> new Item(
+                                name,
+                                rs.getString("description"),
+                                rs.getInt("cost"),
+                                rs.getInt("weight")
+                        )
+                ).single();
+    }
+
+    public void createItem(Item item) {
+        var updatedRows = jdbcClient.sql("INSERT INTO items(name, description, cost, weight) VALUES (?, ?, ?, ?)")
+                .params(Arrays.asList(item.name(), item.desc(), item.cost(), item.weight()))
+                .update();
+        Assert.state(updatedRows > 0, "Failed to create item: " + item.name());
+    }
+
+    public void updateItem(Item item, String name) {
+        var updatedRows = jdbcClient.sql("UPDATE items SET description = ?, cost = ?, weight = ? WHERE name = ?")
+                .param(Arrays.asList(item.desc(), item.cost(), item.weight(), item.name()))
+                .update();
+        Assert.state(updatedRows > 0, "Failed to update item: " + name);
+    }
+
+    public void deleteItem(String name) {
+        var updatedRows = jdbcClient.sql("DELETE FROM items WHERE name = ?")
+                .param(name)
+                .update();
+        Assert.state(updatedRows > 0, "Failed to delete item: " + name);
     }
 }
