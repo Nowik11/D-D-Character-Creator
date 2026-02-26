@@ -126,5 +126,97 @@ Content-Type: application/json
 
 ###
 DELETE localhost:8080/api/subclass/School of Evocation
+###
+POST localhost:8080/api/spell
+Content-Type: application/json
+
+{
+  "name": "Fireball",
+  "description": "A bright streak flashes from your pointing finger to a point you choose within range and then blossoms with a low roar into an explosion of flame.",
+  "schoolOfMagic": "Evocation",
+  "level": 3,
+  "range": "150ft",
+  "duration": "Instantaneous",
+  "isConcentration": false,
+  "isAttack": true,
+  "damage": [
+    {
+      "die": 6,
+      "diceCount": 8,
+      "damageType": "FIRE"
+    }
+  ],
+  "spellComponent": {
+    "somatic": true,
+    "material": true,
+    "verbal": true
+  },
+  "castingTime": {
+    "actionCastTime": "ACTION",
+    "time": null
+  }
+}
+###
+POST localhost:8080/api/spell/wizard/Fireball
+###
+POST localhost:8080/api/spell
+Content-Type: application/json
+
+{
+  "name": "Haste",
+  "description": "Choose a willing creature that you can see within range. Until the spell ends, the target's speed is doubled, it gains a +2 bonus to AC, it has advantage on Dexterity saving throws, and it gains an additional action on each of its turns.",
+  "schoolOfMagic": "Transmutation",
+  "level": 3,
+  "range": "touch",
+  "duration": "1 minute",
+  "isConcentration": true,
+  "isAttack": false,
+  "damage": [],
+  "spellComponent": {
+    "somatic": true,
+    "material": true,
+    "verbal": true
+  },
+  "castingTime": {
+    "actionCastTime": "ACTION",
+    "time": null
+  }
+}
+
+###
+POST localhost:8080/api/spell/wizard/Haste
+###
+GET localhost:8080/api/spell/get_all/wizard
+
+###
+PUT localhost:8080/api/spell
+Content-Type: application/json
+
+{
+  "name": "Haste",
+  "description": "You choose one object that you must touch throughout the casting of the spell. If it is a magic item or some other magic-imbued object, you learn its properties and how to use them.",
+  "schoolOfMagic": "Divination",
+  "level": 1,
+  "range": "touch",
+  "duration": "Instantaneous",
+  "isConcentration": false,
+  "isAttack": false,
+  "damage": [],
+  "spellComponent": {
+    "somatic": true,
+    "material": true,
+    "verbal": true
+  },
+  "castingTime": {
+    "actionCastTime": "TIME",
+    "time": 10
+  }
+}
+
+###
+DELETE localhost:8080/api/spell/Haste
+
+
+
 
 

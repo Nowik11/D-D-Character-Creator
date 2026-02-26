@@ -1,3 +1,7 @@
+* {
+  box-sizing: border-box;
+}
+
 #root {
   max-width: 1280px;
   margin: 0 auto;
@@ -32,21 +36,80 @@
   cursor: pointer;
 }
 
+
+/* Grupowy selektor dla wszystkich pól formularza */
+.input-bar,
+.select-box,
+input.input-bar[type="text"],
+input.input-bar[type="number"] {
+  width: 250px !important; /* Zwiększyłem odrobinę, żeby pomieścić tekst, ważne: !important wymusi tę szerokość */
+  height: 45px;           /* Stała wysokość */
+  box-sizing: border-box;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  background-color: #1a1a1a;
+  color: #cccccc;
+  font-family: inherit;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  appearance: none;
+  -webkit-appearance: none;
+  outline: none;
+  margin: 0;
+
+}
+.input-bar:focus,
+.select-box:focus,
+input.input-bar[type="text"]:focus,
+input.input-bar[type="number"]:focus{
+  border-color: #00ff0a !important;
+}
+.input-bar:hover,
+.select-box:hover,
+input.input-bar[type="text"]:hover,
+input.input-bar[type="number"]:hover
+{
+  border-color: #4CAF50;
+}
+/* Upewnij się, że kontenery nie rozciągają dzieci */
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start; /* To zapobiegnie rozciąganiu pól do 100% szerokości kolumny */
+}
+/* Specyficzne poprawki dla inputów */
+.input-bar {
+  line-height: normal;
+}
+
+/* Specyficzne poprawki dla select-box (żeby strzałka była na końcu) */
+.select-box {
+  justify-content: space-between;
+}
+
+/* Chrome, Safari, Edge, Opera */
+.input-bar::-webkit-outer-spin-button,
+.input-bar::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+.input-bar[type=number] {
+  -moz-appearance: textfield;
+}
+
+.input-bar::placeholder {
+  color: #666666;
+  opacity: 1; /* Firefox */
+}
+
 .custom-multiselect {
   position: relative; /* Ważne dla pozycjonowania listy */
   width: 200px;
-}
-
-.select-box {
-  background-color: #1a1a1a;
-  color: #cccccc;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  cursor: pointer;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
 }
 
 /* Kontener na listę - musi być pod Select Boxem */
@@ -98,23 +161,6 @@
   margin-top: 20px;
 }
 
-/* Grupowanie etykiety i pola, żeby trzymały się razem */
-.input-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-/* Styl dla Twoich inputów tekstowych, żeby pasowały do select-boxów */
-input[type="text"], input[type="number"] {
-  background-color: #1a1a1a;
-  color: #cccccc;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  width: 100%;
-  box-sizing: border-box;
-}
 .btn-nav {
   padding: 10px 20px;
   background-color: #1a1a1a;
@@ -126,4 +172,64 @@ input[type="text"], input[type="number"] {
 .btn-nav:disabled {
   opacity: 0.3;
   cursor: not-allowed;
+}
+
+
+.ability-container {
+  display: flex;
+  align-items: center;
+  gap: 0; /* Łączymy je wizualnie */
+  position: relative;
+}
+
+/* Główny kwadrat */
+.ability-input {
+  width: 60px;
+  height: 60px;
+  background-color: #1a1a1a;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  color: white;
+  text-align: center;
+  font-size: 24px;
+  font-weight: bold;
+  outline: none;
+  padding-right: 7px
+}
+
+.ability-input:hover{
+  border-color: #a12626;
+}
+.ability-input:focus{
+  border-color: #ff0000;
+}
+
+/* Mniejszy kwadrat (modyfikator) */
+.ability-modifier {
+  width: 30px;
+  height: 30px;
+  background-color: #333;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  color: #4CAF50; /* Zielony kolor dla modyfikatora */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 14px;
+  margin-left: -10px; /* Lekkie nachodzenie na główny kwadrat */
+  z-index: 2;
+  box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+}
+
+/* Styl, gdy pole jest zablokowane */
+.ability-input:read-only {
+  cursor: default;
+  padding-right: 0px;
+}
+
+/* Ukrywanie strzałek, jeśli nie chcesz ich w danej chwili */
+.no-arrows::-webkit-inner-spin-button,
+.no-arrows::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }

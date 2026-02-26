@@ -1,5 +1,7 @@
 package backend.data;
 
+import backend.data.enums.AbilityScores;
+import backend.data.enums.Size;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.PositiveOrZero;
 

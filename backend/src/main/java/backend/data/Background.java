@@ -1,5 +1,6 @@
 package backend.data;
 
+import backend.data.enums.Skill;
 import jakarta.validation.constraints.NotEmpty;
 
 import java.util.ArrayList;
