@@ -146,4 +146,37 @@ public class Controller {
     public void deleteBackground(@PathVariable String name) {
         repository.deleteBackground(name);
     }
+
+
+    // ITEM
+    @GetMapping("/items")
+    public List<Item> getAllItems() {
+        return repository.getAllItems();
+    }
+
+    @GetMapping("/items/names")
+    public List<String> getAllItemsNames() {
+        return repository.getAllItemsNames();
+    }
+
+    @GetMapping("/items/{name}")
+    public Item getItemByName(@PathVariable String name) {
+        return repository.getItemByName(name);
+    }
+
+    @PostMapping("/items")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void createItem(@RequestBody Item item) {
+        repository.createItem(item);
+    }
+
+    @PutMapping("/items/{name}")
+    public void updateItem(@RequestBody Item item, @PathVariable String name) {
+        repository.updateItem(item, name);
+    }
+
+    @DeleteMapping("/items/{name}")
+    public void deleteItem(@PathVariable String name) {
+        repository.deleteItem(name);
+    }
 }
