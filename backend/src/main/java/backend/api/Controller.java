@@ -4,7 +4,11 @@ import backend.data.Feature;
 import backend.data.IdSetter;
 import backend.data.Spell;
 import backend.data.Subclass;
+import backend.data.Race;
+import backend.data.Background;
+import backend.data.Item;
 import backend.database.DBRepository;
+
 import jakarta.validation.constraints.Positive;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -82,6 +86,105 @@ public class Controller {
             list.add(new Feature(IdSetter.getIdFeature(),feature.requiredLevel(),feature.name(),feature.description(),feature.modifiers(),true));
         }
         return list;
+    }
+
+
+    // RACE
+    @GetMapping("/race")
+    public List<Race> getAllRaces() {
+        return repository.getAllRaces();
+    }
+
+    @GetMapping("/race/names")
+    public List<String> getAllRacesNames() {
+        return repository.getAllRacesNames();
+    }
+
+    @GetMapping("/race/{name}")
+    public Race getRaceByName(@PathVariable String name) {
+        return repository.getRaceByName(name);
+    }
+
+    @PostMapping("/race")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void createRace(@RequestBody Race race) {
+        repository.createRace(race);
+    }
+
+    @PutMapping("/race/{name}")
+    public void updateRace(@RequestBody Race race, @PathVariable String name) {
+        repository.updateRace(race, name);
+    }
+
+    @DeleteMapping("/race/{name}")
+    public void deleteRace(@PathVariable String name) {
+        repository.deleteRace(name);
+    }
+
+
+    // BACKGROUND
+    @GetMapping("/background")
+    public List<Background> getAllBackgrounds() {
+        return repository.getAllBackgrounds();
+    }
+
+    @GetMapping("/background/names")
+    public List<String> getAllBackgroundsNames() {
+        return repository.getAllBackgroundsNames();
+    }
+
+    @GetMapping("/background/{name}")
+    public Background getBackgroundByName(@PathVariable String name) {
+        return repository.getBackgroundByName(name);
+    }
+
+    @PostMapping("/background")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void createBackground(@RequestBody Background background) {
+        repository.createBackground(background);
+    }
+
+    @PutMapping("/background/{name}")
+    public void updateBackground(@RequestBody Background background, @PathVariable String name) {
+        repository.updateBackground(background, name);
+    }
+
+    @DeleteMapping("/background/{name}")
+    public void deleteBackground(@PathVariable String name) {
+        repository.deleteBackground(name);
+    }
+
+
+    // ITEM
+    @GetMapping("/item")
+    public List<Item> getAllItems() {
+        return repository.getAllItems();
+    }
+
+    @GetMapping("/item/names")
+    public List<String> getAllItemsNames() {
+        return repository.getAllItemsNames();
+    }
+
+    @GetMapping("/item/{name}")
+    public Item getItemByName(@PathVariable String name) {
+        return repository.getItemByName(name);
+    }
+
+    @PostMapping("/item")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void createItem(@RequestBody Item item) {
+        repository.createItem(item);
+    }
+
+    @PutMapping("/item/{name}")
+    public void updateItem(@RequestBody Item item, @PathVariable String name) {
+        repository.updateItem(item, name);
+    }
+
+    @DeleteMapping("/item/{name}")
+    public void deleteItem(@PathVariable String name) {
+        repository.deleteItem(name);
     }
 
     //SPELL

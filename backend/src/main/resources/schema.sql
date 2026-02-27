@@ -61,6 +61,32 @@ CREATE TABLE IF NOT EXISTS modifiers(
     feature_id INT NOT NULL,
     modifier_type VARCHAR(64) NOT NULL,
     modifier_value VARCHAR(64) NOT NULL
-
-
 );
+
+CREATE TABLE IF NOT EXISTS races(
+    name VARCHAR(128) NOT NULL PRIMARY KEY,
+    description VARCHAR(1024) NOT NULL,
+    age VARCHAR(1024) NOT NULL,
+    alignment VARCHAR(1024) NOT NULL,
+    size VARCHAR(64) NOT NULL,
+    speed INT NOT NULL,
+    ability_increase_type VARCHAR(64),
+    ability_increase_value INT,
+    languages VARCHAR(128) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS backgrounds(
+    name VARCHAR(128) NOT NULL PRIMARY KEY,
+    description VARCHAR(1024) NOT NULL,
+    skill_proficiencies VARCHAR(512),
+    tool_proficiencies VARCHAR(512),
+    languages VARCHAR(512) NOT NULL,
+    equipment VARCHAR(1024) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS items(
+    name VARCHAR(64) NOT NULL PRIMARY KEY UNIQUE,
+    description VARCHAR(1024) NOT NULL,
+    cost INT NOT NULL,
+    weight INT NOT NULL
+)

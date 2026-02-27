@@ -1,13 +1,19 @@
 package backend.database;
 
 import backend.data.*;
+import backend.data.enums.AbilityScores;
 import backend.data.enums.CastingTime;
+import backend.data.enums.Size;
 import backend.data.enums.SpellComponent;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.Assert;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Repository
@@ -323,8 +329,216 @@ public class DBRepository {
     }
 
 
+    // RACE
+
+    // helper function
+    private Race mapRowToRace(ResultSet rs, int rowNum) throws SQLException {
+        String abilityIncTypeString = rs.getString("ability_increase_type");
+        AbilityScores abilityScoreType = (abilityIncTypeString != null) ? AbilityScores.valueOf(abilityIncTypeString) : null;
+        int abilityScoreValue = rs.getInt("ability_increase_value");
+        AbstractMap.SimpleEntry<AbilityScores, Integer> abilityScoreInc = (abilityScoreType != null) ? new AbstractMap.SimpleEntry<>(abilityScoreType, abilityScoreValue) : null;
+
+        return new Race(
+                rs.getString("name"),
+                rs.getString("description"),
+                rs.getString("age"),
+                rs.getString("alignment"),
+                Size.valueOf(rs.getString("size")),
+                rs.getInt("speed"),
+                abilityScoreInc,
+                new ArrayList<>(),
+                new ArrayList<>()
+        );
+    }
+
+    public List<Race> getAllRaces() {
+        List<Race> races = jdbcClient.sql("SELECT * FROM races").query(this::mapRowToRace).list();
+
+        for (Race race : races) {
+            race.features().addAll(getAllFeatures("race", race.name()));
+        }
+
+        return races;
+    }
+
+    public List<String> getAllRacesNames() {
+        return jdbcClient.sql("SELECT name FROM races").query(String.class).list();
+    }
+
+    public Race getRaceByName(String name) {
+        Race race = jdbcClient.sql("SELECT * FROM races WHERE name = ?")
+                .param(name)
+                .query(this::mapRowToRace)
+                .single();
+
+        race.features().addAll(getAllFeatures("race", race.name()));
+
+        return race;
+    }
+
+    public void createRace(Race race) {
+        String abilityScoreType = (race.abilityScoreInc() != null) ? race.abilityScoreInc().getKey().name() : null;
+        Integer abilityScoreValue = (race.abilityScoreInc() != null) ? race.abilityScoreInc().getValue() : null;
+
+        var updatedRows = jdbcClient.sql("INSERT INTO races(name, description, age, alignment, size, speed, ability_increase_type, ability_increase_value, languages) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")
+                .params(Arrays.asList(race.name(), race.desc(), race.age(), race.alignment(), race.size(), race.speed(), abilityScoreType, abilityScoreValue, race.languages()))
+                .update();
+        Assert.state(updatedRows > 0, "Failed to create race: " + race.name());
+
+        for (Feature feature : race.features()) {
+            createFeature(feature, "race", race.name());
+        }
+    }
+
+    public void updateRace(Race race, String name) {
+        String abilityScoreType = (race.abilityScoreInc() != null) ? race.abilityScoreInc().getKey().name() : null;
+        Integer abilityScoreValue = (race.abilityScoreInc() != null) ? race.abilityScoreInc().getValue() : null;
+
+        var updatedRows = jdbcClient.sql("UPDATE races SET description = ?, age = ?, alignment = ?, size = ?, speed = ?, ability_increase_type = ?, ability_increase_value = ?, languages = ? WHERE name = ?")
+                .param(Arrays.asList(race.desc(), race.age(), race.alignment(), race.size(), race.speed(), abilityScoreType, abilityScoreValue, race.languages(), race.name()))
+                .update();
+        Assert.state(updatedRows > 0, "Failed to update race: " + name);
+
+        deleteAllFeatures("race", name);
+
+        for (Feature feature : race.features()) {
+            createFeature(feature, "race", name);
+        }
+    }
+
+    public void deleteRace(String name) {
+        deleteAllFeatures("race", name);
+
+        var updatedRows = jdbcClient.sql("DELETE FROM races WHERE name = ?").param(name).update();
+        Assert.state(updatedRows > 0, "Failed to delete race: " + name);
+    }
 
 
+    // BACKGROUND
+    public List<Background> getAllBackgrounds() {
+        List<Background> backgrounds = jdbcClient.sql("SELECT * FROM backgrounds").query(
+                (rs, rowNum) -> new Background(
+                        rs.getString("name"),
+                        rs.getString("description"),
+                        new ArrayList<>(),
+                        new ArrayList<>(),
+                        new ArrayList<>(),
+                        new ArrayList<>(),
+                        new ArrayList<>()
+        )
+        ).list();
+
+        for (Background background : backgrounds) {
+            background.features().addAll(getAllFeatures("background", background.name()));
+        }
+
+        return backgrounds;
+    }
+
+    public List<String> getAllBackgroundsNames() {
+        return jdbcClient.sql("SELECT name FROM backgrounds").query(String.class).list();
+    }
+
+    public Background getBackgroundByName(String name) {
+        Background background = jdbcClient.sql("SELECT * FROM backgrounds WHERE name = ?")
+                .param(name)
+                .query(
+                        (rs, rowNum) -> new Background(
+                                rs.getString("name"),
+                                rs.getString("description"),
+                                new ArrayList<>(),
+                                new ArrayList<>(),
+                                new ArrayList<>(),
+                                new ArrayList<>(),
+                                new ArrayList<>()
+                        )
+                )
+                .single();
+
+        background.features().addAll(getAllFeatures("background", background.name()));
+
+        return background;
+    }
+
+    public void createBackground(Background background) {
+        var updatedRows = jdbcClient.sql("INSERT INTO background(name, description, skill_proficiencies, tool_proficiencies, languages, equipment) VALUES (?, ?, ?, ?, ?, ?)")
+                .params(Arrays.asList(background.name(), background.desc(), background.skillProf(), background.toolProf(), background.languages(), background.equipment()))
+                .update();
+        Assert.state(updatedRows > 0, "Failed to create background: " + background.name());
+
+        for (Feature feature : background.features()) {
+            createFeature(feature, "background", background.name());
+        }
+    }
+
+    public void updateBackground(Background background, String name) {
+        var updatedRows = jdbcClient.sql("UPDATE backgrounds SET description = ?, skill_proficiencies = ?, tool_proficiencies = ?, languages = ?, equipment = ? WHERE name = ?")
+                .param(Arrays.asList(background.desc(), background.skillProf(), background.toolProf(), background.languages(), background.equipment(), background.name()))
+                .update();
+        Assert.state(updatedRows > 0, "Failed to update background: " + name);
+
+        deleteAllFeatures("background", name);
+
+        for (Feature feature : background.features()) {
+            createFeature(feature, "background", name);
+        }
+    }
+
+    public void deleteBackground(String name) {
+        deleteAllFeatures("background", name);
+
+        var updatedRows = jdbcClient.sql("DELETE FROM backgrounds WHERE name = ?").param(name).update();
+        Assert.state(updatedRows > 0, "Failed to delete background: " + name);
+    }
 
 
+    // ITEM
+    public List<Item> getAllItems() {
+        return jdbcClient.sql("SELECT * FROM items").query(
+                (rs, rowNum) -> new Item(
+                        rs.getString("name"),
+                        rs.getString("description"),
+                        rs.getInt("cost"),
+                        rs.getInt("weight")
+                )
+        ).list();
+    }
+
+    public List<String> getAllItemsNames() {
+        return jdbcClient.sql("SELECT name FROM items").query(String.class).list();
+    }
+
+    public Item getItemByName(String name) {
+        return jdbcClient.sql("SELECT * FROM items WHERE name = ?")
+                .param(name)
+                .query(
+                        (rs, rowNum) -> new Item(
+                                name,
+                                rs.getString("description"),
+                                rs.getInt("cost"),
+                                rs.getInt("weight")
+                        )
+                ).single();
+    }
+
+    public void createItem(Item item) {
+        var updatedRows = jdbcClient.sql("INSERT INTO items(name, description, cost, weight) VALUES (?, ?, ?, ?)")
+                .params(Arrays.asList(item.name(), item.desc(), item.cost(), item.weight()))
+                .update();
+        Assert.state(updatedRows > 0, "Failed to create item: " + item.name());
+    }
+
+    public void updateItem(Item item, String name) {
+        var updatedRows = jdbcClient.sql("UPDATE items SET description = ?, cost = ?, weight = ? WHERE name = ?")
+                .param(Arrays.asList(item.desc(), item.cost(), item.weight(), item.name()))
+                .update();
+        Assert.state(updatedRows > 0, "Failed to update item: " + name);
+    }
+
+    public void deleteItem(String name) {
+        var updatedRows = jdbcClient.sql("DELETE FROM items WHERE name = ?")
+                .param(name)
+                .update();
+        Assert.state(updatedRows > 0, "Failed to delete item: " + name);
+    }
 }
