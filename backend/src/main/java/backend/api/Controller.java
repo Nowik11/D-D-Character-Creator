@@ -156,33 +156,33 @@ public class Controller {
 
 
     // ITEM
-    @GetMapping("/items")
+    @GetMapping("/item")
     public List<Item> getAllItems() {
         return repository.getAllItems();
     }
 
-    @GetMapping("/items/names")
+    @GetMapping("/item/names")
     public List<String> getAllItemsNames() {
         return repository.getAllItemsNames();
     }
 
-    @GetMapping("/items/{name}")
+    @GetMapping("/item/{name}")
     public Item getItemByName(@PathVariable String name) {
         return repository.getItemByName(name);
     }
 
-    @PostMapping("/items")
+    @PostMapping("/item")
     @ResponseStatus(HttpStatus.CREATED)
     public void createItem(@RequestBody Item item) {
         repository.createItem(item);
     }
 
-    @PutMapping("/items/{name}")
+    @PutMapping("/item/{name}")
     public void updateItem(@RequestBody Item item, @PathVariable String name) {
         repository.updateItem(item, name);
     }
 
-    @DeleteMapping("/items/{name}")
+    @DeleteMapping("/item/{name}")
     public void deleteItem(@PathVariable String name) {
         repository.deleteItem(name);
     }
