@@ -6,5 +6,6 @@ public enum AbilityScores {
     CON,
     WIS,
     INT,
-    CHA
+    CHA,
+    NULL
 }
