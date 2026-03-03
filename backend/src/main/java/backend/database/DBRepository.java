@@ -62,7 +62,7 @@ public Optional<Type> getClass(String typeName) {
                     rs.getString("description"),
                     rs.getInt("hit_die"),
                     rs.getInt("amount_of_skills_to_choose"),
-                    getAbilityScoreImprovements(rs.getInt("ability_scores_improvements")),
+                    getAbilityScoreImprovements(rs.getInt("ability_score_improvements")),
                     getCantripsPerLevel(typeName),
                     getAllFeatures("type", typeName),
                     AbilityScores.valueOf(rs.getString("multiclass_requirement")),
@@ -79,7 +79,7 @@ public Optional<Type> getClass(String typeName) {
 }
 
 public void createClass(Type type) {
-        var updatedRows = jdbcClient.sql("INSERT INTO types (name,description, hit_die, amount_of_skills_to_choose, ability_score_improvements, multiclass_requierement, spellcasting_ability, caster_type, user_created) VALUES (?,?,?,?,?,?,?,?,?)")
+        var updatedRows = jdbcClient.sql("INSERT INTO types (name,description, hit_die, amount_of_skills_to_choose, ability_score_improvements, multiclass_requirement, spellcasting_ability, caster_type, user_created) VALUES (?,?,?,?,?,?,?,?,?)")
                 .params(List.of(type.name(), type.description(),type.hitDie(), type.amountOfSkillsToChoose(),putListToInt(type.abilityScoreImprovements()),type.multiClassRequirement().name(), type.spellcastingAbility().name(),type.casterType().name(),type.user_created()))
                 .update();
         Assert.state(updatedRows > 0, "Failed to insert new type : " +type.name());
@@ -95,23 +95,61 @@ public void createClass(Type type) {
 
 
 }
+
+public void updateClass(Type type) {
+
+       deleteAllFeatures("type", type.name());
+
+        var updatedRows = jdbcClient.sql("UPDATE types SET description=?, hit_die=?,amount_of_skills_to_choose=?,ability_score_improvements=?,multiclass_requirement=?,spellcasting_ability=?,caster_type=?,user_created=? WHERE name = ?")
+                .params(List.of(type.description(),type.hitDie(),type.amountOfSkillsToChoose(),putListToInt(type.abilityScoreImprovements()),type.multiClassRequirement().name(),type.spellcastingAbility().name(),type.casterType().name(),type.user_created(),type.name()))
+                .update();
+        Assert.state(updatedRows > 0, "Failed to update type : " +type.name());
+
+        deleteCantripsPerLevel(type.name());
+        createCantripsPerLevel(type.name(), type.cantripsKnownPerLevel());
+
+        for(Feature feature: type.features()){
+            createFeature(feature,"type", type.name());
+        }
+        deleteClassProficiency(type.name());
+        createClassProficiency(type.name(), type.proficiency());
+
+        deleteStartingEquipment(type.name());
+        createStartingEquipment(type.name(), type.startingEquipment());
+
+}
+
+public void deleteClass(String typeName) {
+        jdbcClient.sql("DELETE FROM types WHERE name = ?")
+                .param(typeName)
+                .update();
+        deleteAllFeatures("type", typeName);
+        deleteCantripsPerLevel(typeName);
+        deleteClassProficiency(typeName);
+        deleteStartingEquipment(typeName);
+}
 //CANTRIPS
     public List<Integer> getCantripsPerLevel(String className){
-        return jdbcClient.sql("SELECT catrpis from cantrips_per_level WHERE type_name = ? ORDER BY level")
+        return jdbcClient.sql("SELECT cantrips from cantrips_per_level WHERE type_name = ? ORDER BY level")
                 .param(className).query(Integer.class).list();
     }
 
     public void createCantripsPerLevel(String typeName, List<Integer> cantripsPerLevel){
-        for(int i = 1; i<=cantripsPerLevel.size(); i++){
-        jdbcClient.sql("INSERT INTO cantrips_per_level  (level, cantrpis, type_name) VALUES (?, ?,?)")
-                .params(List.of(i, cantripsPerLevel.get(i)),typeName)
+        for(int i = 0; i<cantripsPerLevel.size(); i++){
+        jdbcClient.sql("INSERT INTO cantrips_per_level  (level, cantrips, type_name) VALUES (?, ?,?)")
+                .params(List.of(i, cantripsPerLevel.get(i),typeName))
                 .update();
         }
+    }
+
+    public void deleteCantripsPerLevel(String typeName){
+        jdbcClient.sql("DELETE FROM cantrips_per_level WHERE type_name = ?")
+                .param(typeName).update();
     }
 //STARTING EQUIPMENT
     public List<ItemChoice> getStartingEquipment(String typeName){
         List<ItemChoice> startingEquipment = new ArrayList<>();
-        Integer[] currentIndex = {0};
+        Integer[] currentIndex = {-1};
         jdbcClient.sql("SELECT name, count, index, option_a from starting_equipment WHERE type_name = ? ORDER BY index")
                 .param(typeName).query(
                         (rs, rowNumber) ->{
@@ -125,9 +163,9 @@ public void createClass(Type type) {
                             else{
                                 startingEquipment.get(startingEquipment.size()-1).optionB().add(new ItemChoice.Choice(rs.getString("name"),rs.getInt("count")));
                             }
-                            return false;
+                            return null;
                         }
-                );
+                ).list();
         return startingEquipment;
     }
 
@@ -144,10 +182,15 @@ public void createClass(Type type) {
 
             for(int j = 0 ; j<itemChoice.optionB().size(); j++){
                 jdbcClient.sql("INSERT INTO starting_equipment (type_name, name, count, index,option_a) VALUES (?, ?,?,?,?)")
-                        .params(List.of(typeName, itemChoice.optionA().get(j).name(), itemChoice.optionA().get(j).count()
+                        .params(List.of(typeName, itemChoice.optionB().get(j).name(), itemChoice.optionB().get(j).count()
                                 ,i,false)).update();
             }
         }
+    }
+
+    public void deleteStartingEquipment(String typeName){
+        jdbcClient.sql("DELETE FROM starting_equipment WHERE type_name = ?")
+                .param(typeName).update();
     }
 
 
@@ -187,9 +230,9 @@ public void createClass(Type type) {
                                     throw new IllegalArgumentException("Invalid proficiency type: " + proficiencyType);
 
                             }
-                            return false;
+                            return null;
                         }
-                );
+                ).list();
         return classProficiency;
 
     }
@@ -222,6 +265,12 @@ public void createClass(Type type) {
 
 
 
+    }
+
+    public void deleteClassProficiency(String typeName){
+        jdbcClient.sql("DELETE FROM type_proficiencies WHERE type_name = ?")
+                .param(typeName)
+                .update();
     }
 
 //SUBCLASS

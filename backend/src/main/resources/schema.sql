@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS types(
     description VARCHAR(1024) NOT NULL,
     hit_die INT NOT NULL,
     amount_of_skills_to_choose INT NOT NULL,
-    ability_scores_improvements INT NOT NULL, -- as we have 20 levels we can pack all the info into int :)
+    ability_score_improvements INT NOT NULL, -- as we have 20 levels we can pack all the info into int :)
     multiclass_requirement VARCHAR(3) NOT NULL,
     spellcasting_ability VARCHAR(3) NOT NULL,
     caster_type VARCHAR(16) NOT NULL,

@@ -1,16 +1,17 @@
 package backend.api;
 
-import backend.data.Feature;
-import backend.data.IdSetter;
-import backend.data.Spell;
-import backend.data.Subclass;
+import backend.api.dtos.FeatureDto;
+import backend.api.dtos.SpellDto;
+import backend.api.dtos.SubclassDto;
+import backend.api.dtos.TypeDto;
+import backend.data.*;
 import backend.database.DBRepository;
-import jakarta.validation.constraints.Positive;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @CrossOrigin(origins = "http://localhost:5173")
 @RequestMapping("/api")
@@ -22,6 +23,49 @@ public class Controller {
     // CONSTRUCTOR
     public Controller(DBRepository repository) {
         this.repository = repository;
+    }
+
+    //HELPER FUNCTIONS
+    private List<Feature> dtoToFeature(List<FeatureDto> features) {
+        List<Feature> list = new ArrayList<>();
+        for (FeatureDto feature : features) {
+            list.add(new Feature(IdSetter.getIdFeature(),feature.requiredLevel(),feature.name(),feature.description(),feature.modifiers(),true));
+        }
+        return list;
+    }
+
+    //CLASS
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/class/get_names")
+    public List<String> getClassNames(){
+        return repository.getAllClassNames();
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/class/{name}")
+    public Type getTypeByName(@PathVariable String name){
+        Optional<Type> type = repository.getClass(name);
+        return type.orElse(null);
+    }
+
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping("/class")
+        public void createClass(@RequestBody TypeDto type) {
+
+        repository.createClass(new Type(type.name(), type.description(),type.hitDie(),type.amountOfSkillsToChoose(),type.abilityScoreImprovements(),type.cantripsKnownPerLevel(),dtoToFeature(type.features()),type.multiClassRequirement(),type.spellcastingAbility(),type.casterType(),type.proficiency(),type.startingEquipment(),true));
+
+    }
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PutMapping("/class")
+    public void updateClass(@RequestBody TypeDto type) {
+        repository.updateClass(new Type(type.name(), type.description(),type.hitDie(),type.amountOfSkillsToChoose(),type.abilityScoreImprovements(),type.cantripsKnownPerLevel(),dtoToFeature(type.features()),type.multiClassRequirement(),type.spellcastingAbility(),type.casterType(),type.proficiency(),type.startingEquipment(),true));
+    }
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @DeleteMapping("/class/{name}")
+    public void deleteClass(@PathVariable String name) {
+        repository.deleteClass(name);
     }
 
     //FEATURE
@@ -52,13 +96,13 @@ public class Controller {
 
     //SUBCLASS
     @GetMapping("/subclass/{type_name}")
-    public List<Subclass> getAllOwnedFeatures(@PathVariable String type_name) {
+    public List<Subclass> getAllOwnedSubclasses(@PathVariable String type_name) {
         return  repository.getAllSubclasses(type_name);
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PutMapping("/subclass/{name}")
-    public void updateFeature( @PathVariable String name,@RequestBody SubclassDto subclass) {
+    public void updateSubclass( @PathVariable String name,@RequestBody SubclassDto subclass) {
 
         repository.updateSubclass(new Subclass(name,subclass.description(),dtoToFeature(subclass.features()),true),name);
     }
@@ -76,13 +120,7 @@ public class Controller {
         repository.deleteSubclass(name);
     }
 
-    public List<Feature> dtoToFeature(List<FeatureDto> features) {
-        List<Feature> list = new ArrayList<>();
-        for (FeatureDto feature : features) {
-            list.add(new Feature(IdSetter.getIdFeature(),feature.requiredLevel(),feature.name(),feature.description(),feature.modifiers(),true));
-        }
-        return list;
-    }
+
 
     //SPELL
 
@@ -121,5 +159,7 @@ public class Controller {
     public void deleteFromSpellList(@PathVariable String type_name, @PathVariable String spell_name) {
         repository.deleteFromSpellList(type_name,spell_name);
     }
+
+
 
 }

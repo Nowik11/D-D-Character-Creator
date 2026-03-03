@@ -1,7 +1,6 @@
-package backend.api;
+package backend.api.dtos;
 
 import backend.data.Damage;
-import backend.data.enums.AbilityScores;
 import backend.data.enums.CastingTime;
 import backend.data.enums.SpellComponent;
 import jakarta.validation.constraints.NotEmpty;

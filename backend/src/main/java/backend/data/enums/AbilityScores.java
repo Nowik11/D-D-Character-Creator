@@ -7,5 +7,5 @@ public enum AbilityScores {
     WIS,
     INT,
     CHA,
-    NULL
+    NUL
 }

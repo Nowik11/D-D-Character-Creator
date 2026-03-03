@@ -1,4 +1,4 @@
-package backend.api;
+package backend.api.dtos;
 
 import backend.data.Modifier;
 import jakarta.validation.constraints.NotEmpty;

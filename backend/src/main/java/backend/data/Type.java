@@ -20,4 +20,4 @@ public record Type(@NotEmpty String name, @NotEmpty String description, int hitD
             throw new IllegalArgumentException("Hit dice should be greater than 1");
         }
     }
-}
+}   
