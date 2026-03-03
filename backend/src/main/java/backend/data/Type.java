@@ -1,17 +1,23 @@
 package backend.data;
 
+import backend.data.enums.AbilityScores;
+import backend.data.enums.CasterType;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PositiveOrZero;
 
 import java.util.ArrayList;
-//I removed proff for easier start with DB, I will add it back later
-public record Type(@PositiveOrZero int id, int hitDice,
-                   @NotEmpty String name,@NotEmpty String description, @NotNull ArrayList<Feature> features){
+import java.util.List;
+
+public record Type(@NotEmpty String name, @NotEmpty String description, int hitDie, int amountOfSkillsToChoose,
+                   List<Integer> abilityScoreImprovements, List<Integer> cantripsKnownPerLevel, List<Feature> features,
+                    AbilityScores multiClassRequirement, AbilityScores spellcastingAbility, CasterType casterType,
+                   ClassProficiency proficiency, List<ItemChoice> startingEquipment, boolean user_created)
+{
 
     public Type {
-        if(hitDice <= 1){
+        if(hitDie <= 1){
+
             throw new IllegalArgumentException("Hit dice should be greater than 1");
         }
     }
-}
+}   

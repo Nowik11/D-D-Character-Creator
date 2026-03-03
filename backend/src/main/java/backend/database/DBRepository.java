@@ -1,14 +1,14 @@
 package backend.database;
 
 import backend.data.*;
-import backend.data.enums.CastingTime;
-import backend.data.enums.SpellComponent;
+import backend.data.enums.*;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.Assert;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class DBRepository {
@@ -19,7 +19,7 @@ public class DBRepository {
         this.jdbcClient = jdbcClient;
     }
 
-    CastingTime getCastingTime(String str) {
+    private CastingTime getCastingTime(String str) {
         try {
             Integer castingTime = Integer.parseInt(str);
             return new CastingTime(CastingTime.ActionCastTime.TIME, castingTime);
@@ -29,7 +29,251 @@ public class DBRepository {
         }
     }
 
+    private List<Integer> getAbilityScoreImprovements(int abilityScoreImprovements) {
+        List<Integer> abilityScoreImprovementsList = new ArrayList<>();
+        for(int i = 1,j=0; j<=30; j++, i*=2){
+            if((abilityScoreImprovements & i) >0){
+                abilityScoreImprovementsList.add(j);
+            }
+        }
+        return abilityScoreImprovementsList;
+    }
 
+    private Integer putListToInt(List<Integer> list) {
+        int result = 0;
+        for(int i =0 ; i < list.size() && i<=30 ; i++){
+            result += (int)Math.pow(2,list.get(i));
+        }
+        return result;
+    }
+
+//CLASS ( NAMED TYPE CAUSE OF KEYWORD BLOCK)
+
+public List<String> getAllClassNames(){
+        return jdbcClient.sql("SELECT name from types").query(String.class).list();
+}
+
+public Optional<Type> getClass(String typeName) {
+
+    return jdbcClient.sql("SELECT * from types WHERE name = ?").param(typeName)
+            .query(
+            (rs, rowNumber) -> new Type(
+                    typeName,
+                    rs.getString("description"),
+                    rs.getInt("hit_die"),
+                    rs.getInt("amount_of_skills_to_choose"),
+                    getAbilityScoreImprovements(rs.getInt("ability_score_improvements")),
+                    getCantripsPerLevel(typeName),
+                    getAllFeatures("type", typeName),
+                    AbilityScores.valueOf(rs.getString("multiclass_requirement")),
+                    AbilityScores.valueOf(rs.getString("spellcasting_ability")),
+                    CasterType.valueOf(rs.getString("caster_type")),
+                    getClassProficiency(typeName),
+                    getStartingEquipment(typeName),
+                    rs.getBoolean("user_created")
+
+            )
+    ).optional();
+
+
+}
+
+public void createClass(Type type) {
+        var updatedRows = jdbcClient.sql("INSERT INTO types (name,description, hit_die, amount_of_skills_to_choose, ability_score_improvements, multiclass_requirement, spellcasting_ability, caster_type, user_created) VALUES (?,?,?,?,?,?,?,?,?)")
+                .params(List.of(type.name(), type.description(),type.hitDie(), type.amountOfSkillsToChoose(),putListToInt(type.abilityScoreImprovements()),type.multiClassRequirement().name(), type.spellcastingAbility().name(),type.casterType().name(),type.user_created()))
+                .update();
+        Assert.state(updatedRows > 0, "Failed to insert new type : " +type.name());
+
+        createCantripsPerLevel(type.name(), type.cantripsKnownPerLevel());
+
+        for(Feature feature: type.features())
+            createFeature(feature,"type", type.name());
+
+        createClassProficiency(type.name(), type.proficiency());
+
+        createStartingEquipment(type.name(), type.startingEquipment());
+
+
+}
+
+public void updateClass(Type type) {
+
+       deleteAllFeatures("type", type.name());
+
+        var updatedRows = jdbcClient.sql("UPDATE types SET description=?, hit_die=?,amount_of_skills_to_choose=?,ability_score_improvements=?,multiclass_requirement=?,spellcasting_ability=?,caster_type=?,user_created=? WHERE name = ?")
+                .params(List.of(type.description(),type.hitDie(),type.amountOfSkillsToChoose(),putListToInt(type.abilityScoreImprovements()),type.multiClassRequirement().name(),type.spellcastingAbility().name(),type.casterType().name(),type.user_created(),type.name()))
+                .update();
+        Assert.state(updatedRows > 0, "Failed to update type : " +type.name());
+
+        deleteCantripsPerLevel(type.name());
+        createCantripsPerLevel(type.name(), type.cantripsKnownPerLevel());
+
+        for(Feature feature: type.features()){
+            createFeature(feature,"type", type.name());
+        }
+        deleteClassProficiency(type.name());
+        createClassProficiency(type.name(), type.proficiency());
+
+        deleteStartingEquipment(type.name());
+        createStartingEquipment(type.name(), type.startingEquipment());
+
+}
+
+public void deleteClass(String typeName) {
+        jdbcClient.sql("DELETE FROM types WHERE name = ?")
+                .param(typeName)
+                .update();
+        deleteAllFeatures("type", typeName);
+        deleteCantripsPerLevel(typeName);
+        deleteClassProficiency(typeName);
+        deleteStartingEquipment(typeName);
+}
+//CANTRIPS
+    public List<Integer> getCantripsPerLevel(String className){
+        return jdbcClient.sql("SELECT cantrips from cantrips_per_level WHERE type_name = ? ORDER BY level")
+                .param(className).query(Integer.class).list();
+    }
+
+    public void createCantripsPerLevel(String typeName, List<Integer> cantripsPerLevel){
+        for(int i = 0; i<cantripsPerLevel.size(); i++){
+        jdbcClient.sql("INSERT INTO cantrips_per_level  (level, cantrips, type_name) VALUES (?, ?,?)")
+                .params(List.of(i, cantripsPerLevel.get(i),typeName))
+                .update();
+        }
+    }
+
+    public void deleteCantripsPerLevel(String typeName){
+        jdbcClient.sql("DELETE FROM cantrips_per_level WHERE type_name = ?")
+                .param(typeName).update();
+    }
+//STARTING EQUIPMENT
+    public List<ItemChoice> getStartingEquipment(String typeName){
+        List<ItemChoice> startingEquipment = new ArrayList<>();
+        Integer[] currentIndex = {-1};
+        jdbcClient.sql("SELECT name, count, index, option_a from starting_equipment WHERE type_name = ? ORDER BY index")
+                .param(typeName).query(
+                        (rs, rowNumber) ->{
+                            if(currentIndex[0] < rs.getInt("index")){
+                                startingEquipment.add(new ItemChoice(new ArrayList<>(), new ArrayList<>()));
+                                currentIndex[0]++;
+                            }
+                            if(rs.getBoolean("option_a")){
+                                startingEquipment.get(startingEquipment.size()-1).optionA().add(new ItemChoice.Choice(rs.getString("name"),rs.getInt("count")));
+                            }
+                            else{
+                                startingEquipment.get(startingEquipment.size()-1).optionB().add(new ItemChoice.Choice(rs.getString("name"),rs.getInt("count")));
+                            }
+                            return null;
+                        }
+                ).list();
+        return startingEquipment;
+    }
+
+    public void createStartingEquipment(String typeName, List<ItemChoice> startingEquipment){
+
+        for(int i = 0; i<startingEquipment.size(); i++){
+
+            ItemChoice itemChoice = startingEquipment.get(i);
+            for(int j = 0 ; j<itemChoice.optionA().size(); j++){
+                jdbcClient.sql("INSERT INTO starting_equipment (type_name, name, count, index,option_a) VALUES (?, ?,?,?,?)")
+                        .params(List.of(typeName, itemChoice.optionA().get(j).name(), itemChoice.optionA().get(j).count()
+                        ,i,true)).update();
+            }
+
+            for(int j = 0 ; j<itemChoice.optionB().size(); j++){
+                jdbcClient.sql("INSERT INTO starting_equipment (type_name, name, count, index,option_a) VALUES (?, ?,?,?,?)")
+                        .params(List.of(typeName, itemChoice.optionB().get(j).name(), itemChoice.optionB().get(j).count()
+                                ,i,false)).update();
+            }
+        }
+    }
+
+    public void deleteStartingEquipment(String typeName){
+        jdbcClient.sql("DELETE FROM starting_equipment WHERE type_name = ?")
+                .param(typeName).update();
+    }
+
+
+//CLASS PROFICIENCY
+    public ClassProficiency getClassProficiency(String className) {
+        ClassProficiency classProficiency = new ClassProficiency(
+                new ArrayList<>(),
+                new ArrayList<>(),
+                new ArrayList<>(),
+                new ArrayList<>()
+        );
+
+        jdbcClient.sql("SELECT  proficiency_type, proficiency from type_proficiencies WHERE type_name = ?").param(className)
+                .query(
+                        (rs, rowNumber) -> {
+                            String proficiencyType = rs.getString("proficiency_type");
+                            String proficiency = rs.getString("proficiency");
+                            switch(proficiencyType){
+                                case "skill" :
+                                {
+                                    classProficiency.skills().add(Skill.valueOf(proficiency));
+                                    break;
+                                }
+                                case "armor" :{
+                                    classProficiency.armourProficiencies().add(ArmorType.valueOf(proficiency));
+                                    break;
+                                }
+                                case "weapon" :{
+                                    classProficiency.weaponProficiencies().add(proficiency);
+                                    break;
+                                }
+                                case "tool" :{
+                                    classProficiency.toolsProficiencies() .add(proficiency);
+                                    break;
+                                }
+                                default:
+                                    throw new IllegalArgumentException("Invalid proficiency type: " + proficiencyType);
+
+                            }
+                            return null;
+                        }
+                ).list();
+        return classProficiency;
+
+    }
+
+    public void createClassProficiency(String typeName, ClassProficiency classProficiency){
+
+        for(Skill skill : classProficiency.skills()){
+            jdbcClient.sql("Insert into type_proficiencies(type_name, proficiency_type, proficiency) values (?,?,?)")
+                    .params(List.of(typeName, "skill", skill.name()))
+                    .update();
+        }
+
+        for(ArmorType armor : classProficiency.armourProficiencies()){
+            jdbcClient.sql("Insert into type_proficiencies(type_name, proficiency_type, proficiency) values (?,?,?)")
+                    .params(List.of(typeName, "armor", armor.name()))
+                    .update();
+        }
+
+        for(String weapon : classProficiency.weaponProficiencies()){
+            jdbcClient.sql("Insert into type_proficiencies(type_name, proficiency_type, proficiency) values (?,?,?)")
+                    .params(List.of(typeName, "weapon", weapon))
+                    .update();
+        }
+        for(String tool : classProficiency.toolsProficiencies()){
+            jdbcClient.sql("INSERT INTO type_proficiencies(type_name, proficiency_type, proficiency) values (?,?,?)")
+                    .params(List.of(typeName, "tool", tool))
+                    .update();
+        }
+
+
+
+
+    }
+
+    public void deleteClassProficiency(String typeName){
+        jdbcClient.sql("DELETE FROM type_proficiencies WHERE type_name = ?")
+                .param(typeName)
+                .update();
+    }
+
+//SUBCLASS
     public List<Subclass> getAllSubclasses(String typeName) {
         List<Subclass> subclasses = jdbcClient.sql("SELECT name, description,user_created FROM subclasses WHERE type_name = ?")
                 .param(typeName)

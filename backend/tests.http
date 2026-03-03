@@ -216,7 +216,143 @@ Content-Type: application/json
 ###
 DELETE localhost:8080/api/spell/Haste
 
+###
+POST localhost:8080/api/class
+Content-Type: application/json
+
+{
+  "name": "Fighter",
+  "description": "A master of martial combat, skilled with a variety of weapons and armor.",
+  "hitDie": 10,
+  "amountOfSkillsToChoose": 2,
+  "abilityScoreImprovements": [4, 6, 8, 12, 14, 16, 19],
+  "cantripsKnownPerLevel": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  "features": [
+    {
+      "requiredLevel": 1,
+      "name": "Fighting Style (Archery)",
+      "description": "You gain a +2 bonus to attack rolls you make with ranged weapons.",
+      "modifiers": [
+        { "modifierType": "ATTACK_BONUS", "modifierValue": "2" }
+      ]
+    },
+    {
+      "requiredLevel": 1,
+      "name": "Second Wind",
+      "description": "Regain 1d10 + level HP as a bonus action.",
+      "modifiers": [
+        { "modifierType": "ACTION_GAIN", "modifierValue": "1" }
+      ]
+    }
+  ],
+  "multiClassRequirement": "STR",
+  "spellcastingAbility": "NUL",
+  "casterType": "NONE",
+  "proficiency": {
+    "skills": ["ATHLETICS", "ACROBATICS"],
+    "armourProficiencies": ["HEAVY", "MEDIUM", "LIGHT", "SHIELD"],
+    "weaponProficiencies": ["Simple Weapons", "Martial Weapons"],
+    "toolsProficiencies": []
+  },
+  "startingEquipment": [
+    {
+      "optionA": [{ "name": "Chain Mail", "count": 1 }],
+      "optionB": [{ "name": "Leather Armor", "count": 1 }, { "name": "Longbow", "count": 1 }]
+    }
+  ],
+  "user_created": false
+}
 
 
+###
+POST localhost:8080/api/class
+Content-Type: application/json
 
+{
+  "name": "Wizard",
+  "description": "A scholarly magic-user capable of manipulating reality.",
+  "hitDie": 6,
+  "amountOfSkillsToChoose": 2,
+  "abilityScoreImprovements": [4, 8, 12, 16, 19],
+  "cantripsKnownPerLevel": [3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5],
+  "features": [
+    {
+      "requiredLevel": 2,
+      "name": "Sculpt Spells",
+      "description": "Create pockets of relative safety within the effects of your evocation spells.",
+      "modifiers": [
+        { "modifierType": "SAVE_SUCCESS_AUTO", "modifierValue": "0" }
+      ]
+    }
+  ],
+  "multiClassRequirement": "INT",
+  "spellcastingAbility": "INT",
+  "casterType": "FULL",
+  "proficiency": {
+    "skills": ["ARCANA", "HISTORY"],
+    "armourProficiencies": [],
+    "weaponProficiencies": ["Daggers", "Quarterstaffs"],
+    "toolsProficiencies": []
+  },
+  "startingEquipment": [
+    {
+      "optionA": [{ "name": "Quarterstaff", "count": 1 }],
+      "optionB": [{ "name": "Dagger", "count": 1 }]
+    }
+  ],
+  "user_created": false
+}
+
+###
+GET localhost:8080/api/class/get_names
+
+###
+
+GET localhost:8080/api/class/Wizard
+
+###
+
+GET localhost:8080/api/class/Fighter
+
+###
+PUT localhost:8080/api/class
+Content-Type: application/json
+
+{
+  "name": "Fighter",
+  "description": "A holy warrior bound by a sacred oath.",
+  "hitDie": 10,
+  "amountOfSkillsToChoose": 2,
+  "abilityScoreImprovements": [4, 8, 12, 16, 19],
+  "cantripsKnownPerLevel": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  "features": [
+    {
+      "requiredLevel": 6,
+      "name": "Aura of Protection",
+      "description": "Grant a bonus to saving throws to nearby allies.",
+      "modifiers": [
+        { "modifierType": "SAVE_BONUS", "modifierValue": "3" }
+      ]
+    }
+  ],
+  "multiClassRequirement": "STR",
+  "spellcastingAbility": "CHA",
+  "casterType": "HALF",
+  "proficiency": {
+    "skills": ["PERSUASION", "RELIGION"],
+    "armourProficiencies": ["HEAVY", "MEDIUM", "LIGHT", "SHIELD"],
+    "weaponProficiencies": ["Martial Weapons"],
+    "toolsProficiencies": []
+  },
+  "startingEquipment": [
+    {
+      "optionA": [{ "name": "Warhammer", "count": 1 }, { "name": "Shield", "count": 1 }],
+      "optionB": [{ "name": "Martial Weapon", "count": 2 }]
+    }
+  ],
+  "user_created": false
+}
+
+###
+DELETE localhost:8080/api/class/Wizard
 
